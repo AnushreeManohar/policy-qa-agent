@@ -1,6 +1,8 @@
 # Audit report — Insurance Policy Q&A Agent
 
-**Date:** 2026-11-12 · **Commit audited:** `ae28f5d` · **Commit after fixes:** see `git log`
+**Date:** 2026-11-12 · The audit ran on a local history (initial build, blind-set freeze, audit fixes); the
+public repository was published as a single squashed commit, so those intermediate commits are not on GitHub.
+The blind set can still be checked by its hash: `sha256sum eval/blind_v2.jsonl` → `58cd1fe7…`.
 
 **Conflict of interest.** This audit was performed by the same assistant that built the project, so it is a
 self-audit, not an independent review. Three controls limit the bias: (1) a new blind test set was written from
@@ -123,8 +125,8 @@ capability. No checkpointing or persistence (stateless per request), which is ap
 | Adversarial over HTTP (57 cases) | before fixes **43/57** · after fixes **49/57** |
 | Browser end to end (headless Chromium) | 14/14 |
 | Evaluation quality gate (dev) | passes (accuracy >= 0.9, abstention 1.0, injection 1.0) |
-| Docker image build | **not executed** (no daemon); Dockerfile steps reproduced in a clean venv, which caught two packaging bugs earlier |
-| GitHub Actions | **not executed** (workflow YAML validated only) |
+| Docker image build | **passed in CI** (GitHub Actions run #1, 2026-11-12); not run in the audit environment (no daemon) |
+| GitHub Actions | **passed**: run #1 green on all four jobs (tests with PostgreSQL + evaluation gate, frontend build, browser end-to-end, Docker build) |
 | Real LLM | **not executed** (no key, no model download) |
 
 **Tests that passed without testing the right thing (found by the audit):**
@@ -211,7 +213,7 @@ fallback, flagged chunks, soft selection), `embeddings.py` (optional word-vector
 
 ## 10. Remaining limitations
 
-Not verified: real LLM answers, transformer embeddings, Docker image build, GitHub Actions run, behaviour with
+Not verified: real LLM answers, transformer embeddings, `docker compose up` end to end, behaviour with
 real (non-synthetic) policy PDFs, filtered HNSW recall at scale. Known weak: answer quality on unseen wording
 (62% blind), cross-policy comparison, follow-up questions, injection detection beyond known patterns,
 single-key auth, single-process throughput.
@@ -230,7 +232,7 @@ single-key auth, single-process throughput.
 | Testing | **8/10** | Unit, integration, adversarial, blind, browser and load tests; one key test hid H1 until this audit |
 | Security | **6/10** | Many verified controls; critical default fixed only now; heuristic injection defence; single shared key |
 | Frontend | **7/10** | All features wired to working endpoints and verified in a browser; stateless "chat" |
-| DevOps | **5/10** | Compose validated and Dockerfile steps simulated, but the image and CI have never actually run |
+| DevOps | **7/10** | CI green on first run in a clean environment (tests, PostgreSQL, eval gate, browser test, image build); Compose stack not yet run end to end; no deployment |
 | Documentation | **7/10** | Thorough and now honest; it previously contained a false "blind" claim |
 
 ## 12. Verdict
@@ -246,7 +248,7 @@ generation quality and semantic retrieval — have never been measured. Three st
 1. Run `python eval/run_eval.py --judge --dataset blind_v2.jsonl` with `LLM_PROVIDER=anthropic` (or OpenAI)
    and `EMBEDDING_PROVIDER=openai`, and publish the comparison with the extractive baseline. (The blind set is
    now used; write a fresh one first, or report it clearly as a second run.)
-2. Push to GitHub and get CI green, including the Docker build.
+2. ~~Push to GitHub and get CI green, including the Docker build.~~ Done: CI run #1 passed on 2026-11-12.
 3. Replace or augment the fictional corpus with a few real public policy forms and re-run the evaluation.
 
 ---

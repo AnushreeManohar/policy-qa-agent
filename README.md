@@ -1,5 +1,7 @@
 # Insurance Policy Q&A Agent
 
+[![CI](https://github.com/AnushreeManohar/policy-qa-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/AnushreeManohar/policy-qa-agent/actions/workflows/ci.yml)
+
 Ask a question about an insurance policy and get an answer that quotes the policy, with the document, section
 and page for every sentence. When the policies don't say, the agent says so instead of guessing.
 
@@ -225,10 +227,9 @@ docker compose run --rm app policyqa ingest /app/data/policies
 open http://localhost:8000
 ```
 
-> The Dockerfile and Compose file were validated (`docker compose config`) and every Dockerfile step was
-> reproduced in a clean virtualenv against a fresh database, which caught two packaging bugs that are now
-> fixed. The image itself could **not be built** in the development environment (no Docker daemon); the CI
-> workflow builds it on every push.
+> The Docker image is built by CI on every push (first green run: 2026-11-12). The full Compose stack
+> (app + PostgreSQL containers together) has been validated with `docker compose config` but not yet run
+> end to end; the same app + PostgreSQL combination is exercised by CI's browser test without Compose.
 
 ### Option B: local development (verified)
 
@@ -510,7 +511,8 @@ and their URLs change, which would make the evaluation irreproducible. You can a
   simply adding workers without moving the limiter to shared storage.
 - **Untested at scale**: filtered HNSW search can return fewer rows than requested with selective filters on
   large tables (pgvector 0.6 has no iterative scan); not observable at this corpus size.
-- **Docker image not built locally** (see [Run it](#run-it)); CI builds it.
+- **Compose stack not run end to end yet**: CI builds the image and runs app + PostgreSQL, but not via
+  `docker compose up`.
 
 ## Future work
 
