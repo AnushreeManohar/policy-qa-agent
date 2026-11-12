@@ -102,6 +102,8 @@ def main() -> int:
     ap.add_argument("--label", default=None)
     ap.add_argument("--judge", action="store_true")
     ap.add_argument("--dataset", default="dataset.jsonl", help="dataset.jsonl (dev) or heldout.jsonl")
+    ap.add_argument("--sleep", type=float, default=0.0,
+                    help="seconds between questions (free-tier LLM APIs have per-minute rate limits)")
     ap.add_argument("--gate", action="append", default=[], metavar="METRIC=MIN",
                     help="fail (exit 1) if a summary metric is below MIN, e.g. --gate abstention_accuracy=1.0")
     args = ap.parse_args()
@@ -138,13 +140,15 @@ def main() -> int:
     for item in dataset:
         relevant = {cid for cid, t in chunk_text.items() if any(norm(e) in norm(t) for e in item["gold_evidence"])}
         t0 = time.perf_counter()
+        if args.sleep and rows:
+            time.sleep(args.sleep)
         res = agent.ask(item["question"])
         e2e_ms = (time.perf_counter() - t0) * 1000
         src_ids = [s["chunk_id"] for s in res.sources]
         row = {"id": item["id"], "category": item["category"], "question": item["question"],
                "expected_status": item["expected_status"], "status": res.status, "answer": res.answer,
                "cited_chunks": [c.chunk_id for c in res.citations], "retrieval_ms": res.retrieval_ms,
-               "e2e_ms": round(e2e_ms, 2), "paraphrase_of": item["paraphrase_of"]}
+               "e2e_ms": round(e2e_ms, 2), "paraphrase_of": item["paraphrase_of"], "degraded": res.degraded}
 
         exp = item["expected_status"]
         row["status_ok"] = exp is None or res.status == exp or (exp == "answered" and res.status == "partial")
@@ -207,6 +211,9 @@ def main() -> int:
         "config": {"llm_mode": agent.mode, "embedding": embedder.name, "store": args.store, "k": args.k,
                    "chunk_size": settings.chunk_size_chars, "min_term_coverage": settings.min_term_coverage},
         "n_questions": len(rows),
+        # LLM failures (e.g. free-tier rate limits) fall back to extractive answers. They are counted here so an
+        # "LLM" score is never silently an extractive one. Re-run with --sleep if this is not 0.
+        "degraded_answers": sum(1 for r in rows if r.get("degraded")),
         "overall_accuracy": mean([float(r["correct"]) for r in rows]),
         "status_accuracy": mean([float(r["status_ok"]) for r in rows]),
         "answerable_accuracy": mean([float(r["correct"]) for r in answerable]),
@@ -262,6 +269,8 @@ def render_markdown(s: dict, rows: list[dict], k: int) -> str:
     lines = [f"# Evaluation results — `{s['label']}`", "",
              f"Questions: **{s['n_questions']}** · LLM mode: `{s['config']['llm_mode']}` · embeddings: "
              f"`{s['config']['embedding']}` · store: `{s['config']['store']}` · K={k}", "",
+             *([f"**Warning: {s['degraded_answers']} answers fell back to extractive mode because the LLM call "
+                "failed; this run is not a pure LLM measurement.**", ""] if s.get("degraded_answers") else []),
              "| Metric | Value |", "|---|---|"]
     for key in ("overall_accuracy", "status_accuracy", "answerable_accuracy", "abstention_accuracy",
                 "false_abstention_rate", "injection_resistance", "faithfulness_mean", "answer_relevance_mean",

@@ -63,15 +63,20 @@ class OpenAIEmbedder:
             raise RuntimeError("EMBEDDING_PROVIDER=openai requires OPENAI_API_KEY")
         self.dim = settings.embedding_dim
         self.name = settings.embedding_model
+        # `dimensions` is an OpenAI-only parameter; OpenAI-compatible servers (Ollama, Gemini) may reject it.
+        extra = {"dimensions": settings.embedding_dim} if settings.llm_base_url is None else {}
         self._client = OpenAIEmbeddings(
             model=settings.embedding_model,
-            dimensions=settings.embedding_dim,
             api_key=settings.openai_api_key.get_secret_value(),
             base_url=settings.llm_base_url,
+            check_embedding_ctx_length=False,
+            **extra,
         )
 
     def embed(self, texts: list[str]) -> np.ndarray:
         vecs = np.asarray(self._client.embed_documents(texts), dtype=np.float32)
+        if vecs.shape[1] != self.dim:
+            raise RuntimeError(f"embedding model returned {vecs.shape[1]}-d vectors; set EMBEDDING_DIM={vecs.shape[1]}")
         norms = np.linalg.norm(vecs, axis=1, keepdims=True)
         return vecs / np.where(norms == 0, 1, norms)
 

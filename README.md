@@ -269,6 +269,25 @@ All settings are environment variables; [`.env.example`](.env.example) documents
 
 ---
 
+## Evaluate the LLM mode for free
+
+The LLM path talks to any OpenAI-compatible endpoint. One command runs the extractive baseline and the LLM
+mode on the dev and blind sets and writes a side-by-side table to `eval/results/llm-comparison.md`:
+
+```bash
+# Option 1: local and free with Ollama (https://ollama.com); a 7B model needs ~16 GB RAM
+ollama pull qwen2.5:7b
+PRESET=ollama scripts/run_llm_eval.sh
+
+# Option 2: Google Gemini free tier (key from https://aistudio.google.com/apikey)
+GEMINI_API_KEY=... PRESET=gemini scripts/run_llm_eval.sh      # waits between questions for rate limits
+```
+
+No database is needed (in-memory store). If a call fails, for example on a free-tier rate limit, that answer
+falls back to extractive mode, and the report counts it under *LLM failures*. A run with failures is not a
+pure LLM measurement; re-run with a larger `SLEEP=`. **Status:** the wiring is tested against a stand-in
+OpenAI-compatible server (`tests/test_openai_compatible.py`). No real model has been evaluated yet.
+
 ## API
 
 Interactive docs are served at `/docs`. Responses below were captured from the running service.

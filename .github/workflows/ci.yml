@@ -33,7 +33,7 @@ jobs:
           cache: pip
           cache-dependency-path: backend/constraints.txt
       - name: Install
-        run: pip install -c backend/constraints.txt -e "backend[dev,semantic]"
+        run: pip install -c backend/constraints.txt -e "backend[dev,semantic,openai]"
       - name: Lint
         working-directory: backend
         run: ruff check src tests ../eval ../scripts
