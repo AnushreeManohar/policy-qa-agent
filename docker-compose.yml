@@ -1,0 +1,36 @@
+# docker compose up --build        -> app on http://localhost:8000
+# docker compose run --rm app policyqa ingest /app/data/policies   (load the sample policies)
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-policyqa}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-policyqa}
+    volumes:
+      - pgdata:/var/lib/postgresql/data   # persists documents and embeddings across restarts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-policyqa} -d ${POSTGRES_DB:-policyqa}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    # Not published to the host: only the app container can reach the database.
+
+  app:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-policyqa}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-policyqa}
+      VECTOR_STORE: postgres
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+
+volumes:
+  pgdata:
