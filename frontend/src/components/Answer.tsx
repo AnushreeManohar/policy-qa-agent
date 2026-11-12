@@ -98,7 +98,9 @@ export function Answer({ turnId, result }: Props) {
       )}
 
       <p className="answer__meta">
-        {result.mode === "extractive"
+        {result.degraded
+          ? "The language model was unavailable, so these are direct quotes from the policy text."
+          : result.mode === "extractive"
           ? "Quoted directly from the policy text, with no language model involved."
           : "Written by the language model from the clauses above, then checked against them."}{" "}
         Took {Math.round(result.latency_ms)} ms.

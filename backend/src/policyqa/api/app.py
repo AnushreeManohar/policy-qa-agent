@@ -140,7 +140,9 @@ def create_app(settings: Settings | None = None, *, store: VectorStore | None = 
                 db_ok = False
         return HealthOut(status="ok" if db_ok else "degraded", database=db_ok, llm_mode=svc.agent.mode,
                          embedding_model=svc.embedder.name, documents=docs,
-                         uploads_enabled=svc.settings.allow_uploads,
+                         uploads_enabled=svc.settings.allow_uploads and (
+                             svc.settings.api_key is not None or svc.settings.allow_anonymous_uploads),
+                         upload_requires_key=svc.settings.api_key is not None,
                          auth_required_for_ask=(svc.settings.api_key is not None
                                                 and svc.settings.require_api_key_for_ask))
 
@@ -166,6 +168,9 @@ def create_app(settings: Settings | None = None, *, store: VectorStore | None = 
                               svc: Services = Depends(services)) -> Any:
         if not svc.settings.allow_uploads:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "Uploads are disabled on this deployment.")
+        if svc.settings.api_key is None and not svc.settings.allow_anonymous_uploads:
+            raise HTTPException(status.HTTP_403_FORBIDDEN,
+                                "Uploads require API_KEY to be configured on the server.")
         check_api_key(svc.settings, api_key)
         svc.limiter.check("upload:" + client_key(request))
         if file.content_type not in ("application/pdf", "application/x-pdf", "application/octet-stream"):

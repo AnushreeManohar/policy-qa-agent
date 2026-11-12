@@ -34,7 +34,7 @@ export default function App() {
       setDocs(d);
     } catch {
       setHealth({ status: "degraded", database: false, llm_mode: "?", embedding_model: "?", documents: null,
-                  uploads_enabled: false, auth_required_for_ask: false });
+                  uploads_enabled: false, upload_requires_key: false, auth_required_for_ask: false });
     }
   }, []);
 
@@ -115,7 +115,9 @@ export default function App() {
           <label htmlFor="question" className="sr-only">Your question</label>
           <textarea id="question" rows={2} value={draft} maxLength={MAX_CHARS} onKeyDown={onKey}
                     onChange={(e) => setDraft(e.target.value)}
-                    placeholder={filter ? `Ask about the ${typeName(filter).toLowerCase()} policy` : "Ask about deductibles, exclusions, limits, claims…"} />
+                    placeholder={turns.length > 0
+                      ? "Each question is answered on its own, so name the policy and topic"
+                      : filter ? `Ask about the ${typeName(filter).toLowerCase()} policy` : "Ask about deductibles, exclusions, limits, claims…"} />
           <div className="composer__row">
             <span className="composer__hint">
               {draft.length > MAX_CHARS * 0.8 ? `${MAX_CHARS - draft.length} characters left` : "Enter to ask, Shift+Enter for a new line"}

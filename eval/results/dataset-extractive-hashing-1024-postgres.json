@@ -17,8 +17,9 @@
     "abstention_accuracy": 1.0,
     "false_abstention_rate": 0.0,
     "injection_resistance": 1.0,
-    "faithfulness_mean": 0.9302,
-    "answer_relevance_mean": 0.6679,
+    "faithfulness_mean": 1.0,
+    "faithfulness_note": "NOT a quality signal in extractive mode: answers are verbatim quotes, so lexical support is ~1.0 by construction. Meaningful only for LLM-generated answers.",
+    "answer_relevance_mean": 0.6907,
     "citation_precision": 0.907,
     "citation_hit_rate": 0.9767,
     "pipeline_retrieval@6": {
@@ -26,29 +27,29 @@
       "recall": 1.0,
       "evidence_recall": 1.0,
       "hit": 1.0,
-      "mrr": 0.762
+      "mrr": 0.7651
     },
     "ablation_retrieval@6": {
       "vector_only": {
-        "precision": 0.1977,
-        "recall": 0.9419,
-        "evidence_recall": 0.9419,
-        "hit": 0.9535,
-        "mrr": 0.7756
+        "precision": 0.1899,
+        "recall": 0.8953,
+        "evidence_recall": 0.8953,
+        "hit": 0.907,
+        "mrr": 0.7391
       },
       "keyword_only": {
-        "precision": 0.1822,
-        "recall": 0.907,
-        "evidence_recall": 0.907,
-        "hit": 0.9302,
-        "mrr": 0.6213
+        "precision": 0.1938,
+        "recall": 0.9302,
+        "evidence_recall": 0.9302,
+        "hit": 0.9535,
+        "mrr": 0.6857
       },
       "hybrid": {
-        "precision": 0.1977,
-        "recall": 0.9535,
-        "evidence_recall": 0.9535,
+        "precision": 0.2016,
+        "recall": 0.9651,
+        "evidence_recall": 0.9651,
         "hit": 0.9767,
-        "mrr": 0.7198
+        "mrr": 0.7465
       }
     },
     "paraphrase_consistency": {
@@ -68,17 +69,17 @@
         {
           "pair": "wait-01 ~ para-03",
           "both_correct": true,
-          "same_status": false,
+          "same_status": true,
           "citation_jaccard": 1.0
         }
       ],
-      "rate": 0.6667
+      "rate": 1.0
     },
     "latency_ms": {
-      "retrieval_p50": 2.0,
-      "retrieval_p95": 3.9,
-      "e2e_p50": 6.8,
-      "e2e_p95": 10.6
+      "retrieval_p50": 1.3,
+      "retrieval_p95": 2.3,
+      "e2e_p50": 8.7,
+      "e2e_p95": 12.3
     },
     "by_category": {
       "ambiguous": {
@@ -161,12 +162,12 @@
       "question": "Does the homeowners policy cover a detached garage?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "Coverage B covers other structures on the residence premises set apart from the dwelling by clear space, such as a detached garage, fence or tool shed. [2]",
+      "answer": "Coverage B covers other structures on the residence premises set apart from the dwelling by clear space, such as a detached garage, fence or tool shed. [1]",
       "cited_chunks": [
         "a8c2ed223b70e82c:0002"
       ],
-      "retrieval_ms": 4.25,
-      "e2e_ms": 11.72,
+      "retrieval_ms": 3.05,
+      "e2e_ms": 1252.03,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -176,7 +177,7 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 0.5,
+        "mrr": 1.0,
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
@@ -190,12 +191,12 @@
       "question": "Which perils are covered for my personal property under the homeowners policy?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "We insure property described in Coverage C against direct physical loss caused by the following named perils only: fire or lightning; windstorm or hail; explosion; riot or civil commotion; aircraft; vehicles; smoke; vandalism or malicious mischief; theft; falling objects; weight of ice, snow or sleet; sudden and accidental discharge or overflow of water or steam from a plumbing, heating or air conditioning system; and freezing of a plumbing system. [5]",
+      "answer": "We insure property described in Coverage C against direct physical loss caused by the following named perils only: fire or lightning; windstorm or hail; explosion; riot or civil commotion; aircraft; vehicles; smoke; vandalism or malicious mischief; theft; falling objects; weight of ice, snow or sleet; sudden and accidental discharge or overflow of water or steam from a plumbing, heating or air conditioning system; and freezing of a plumbing system. [4]",
       "cited_chunks": [
         "a8c2ed223b70e82c:0004"
       ],
-      "retrieval_ms": 2.26,
-      "e2e_ms": 6.76,
+      "retrieval_ms": 1.88,
+      "e2e_ms": 9.42,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -205,7 +206,7 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 0.2,
+        "mrr": 0.25,
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
@@ -223,8 +224,8 @@
       "cited_chunks": [
         "423f98d60d54e882:0005"
       ],
-      "retrieval_ms": 2.09,
-      "e2e_ms": 6.8,
+      "retrieval_ms": 1.56,
+      "e2e_ms": 7.53,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -248,41 +249,12 @@
       "question": "Does the pet policy cover cancer treatment?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "We reimburse eligible veterinary expenses for accidents and illnesses, including diagnostic tests, x-rays and ultrasounds, surgery, hospitalization, prescription medications, emergency and specialist care, cancer treatment, and hereditary and congenital conditions. [3]",
+      "answer": "We reimburse eligible veterinary expenses for accidents and illnesses, including diagnostic tests, x-rays and ultrasounds, surgery, hospitalization, prescription medications, emergency and specialist care, cancer treatment, and hereditary and congenital conditions. [1]",
       "cited_chunks": [
         "0c72ca253f455d2d:0003"
       ],
-      "retrieval_ms": 1.74,
-      "e2e_ms": 5.64,
-      "paraphrase_of": null,
-      "status_ok": true,
-      "content_ok": true,
-      "problems": [],
-      "correct": true,
-      "retrieval": {
-        "precision": 0.16666666666666666,
-        "recall": 1.0,
-        "hit": 1.0,
-        "mrr": 0.3333333333333333,
-        "evidence_recall": 1.0
-      },
-      "faithfulness": 1.0,
-      "answer_relevance": 0.5392,
-      "citation_precision": 1.0,
-      "citation_hit": 1.0
-    },
-    {
-      "id": "cov-05",
-      "category": "coverage",
-      "question": "Are acupuncture and physical rehabilitation covered for my pet?",
-      "expected_status": "answered",
-      "status": "answered",
-      "answer": "Alternative therapies such as acupuncture and physical rehabilitation are covered when prescribed by a licensed veterinarian as treatment for a covered condition. [1]",
-      "cited_chunks": [
-        "0c72ca253f455d2d:0003"
-      ],
-      "retrieval_ms": 2.37,
-      "e2e_ms": 6.6,
+      "retrieval_ms": 1.33,
+      "e2e_ms": 6.48,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -296,6 +268,35 @@
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
+      "answer_relevance": 0.5392,
+      "citation_precision": 1.0,
+      "citation_hit": 1.0
+    },
+    {
+      "id": "cov-05",
+      "category": "coverage",
+      "question": "Are acupuncture and physical rehabilitation covered for my pet?",
+      "expected_status": "answered",
+      "status": "answered",
+      "answer": "Alternative therapies such as acupuncture and physical rehabilitation are covered when prescribed by a licensed veterinarian as treatment for a covered condition. [2]",
+      "cited_chunks": [
+        "0c72ca253f455d2d:0003"
+      ],
+      "retrieval_ms": 1.6,
+      "e2e_ms": 6.75,
+      "paraphrase_of": null,
+      "status_ok": true,
+      "content_ok": true,
+      "problems": [],
+      "correct": true,
+      "retrieval": {
+        "precision": 0.16666666666666666,
+        "recall": 1.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "evidence_recall": 1.0
+      },
+      "faithfulness": 1.0,
       "answer_relevance": 0.637,
       "citation_precision": 1.0,
       "citation_hit": 1.0
@@ -306,12 +307,12 @@
       "question": "Is earthquake damage covered under the homeowners policy?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "Earth movement, including earthquake, landslide, mudflow, sinkhole and volcanic eruption, is excluded. [4]",
+      "answer": "Earth movement, including earthquake, landslide, mudflow, sinkhole and volcanic eruption, is excluded. [3]",
       "cited_chunks": [
         "a8c2ed223b70e82c:0005"
       ],
-      "retrieval_ms": 2.31,
-      "e2e_ms": 6.82,
+      "retrieval_ms": 1.76,
+      "e2e_ms": 8.91,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -321,7 +322,7 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 0.25,
+        "mrr": 0.3333333333333333,
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
@@ -339,8 +340,8 @@
       "cited_chunks": [
         "a8c2ed223b70e82c:0005"
       ],
-      "retrieval_ms": 1.81,
-      "e2e_ms": 6.18,
+      "retrieval_ms": 1.69,
+      "e2e_ms": 9.13,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -364,13 +365,13 @@
       "question": "Is water that backs up through a sewer drain covered?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "Water which backs up through sewers or drains or overflows from a sump pump is also excluded unless the Water Backup Endorsement is shown in the Declarations. [1] Water Backup Endorsement. When shown in the Declarations, covers direct physical loss caused by water which backs up through sewers or drains or overflows from a sump pump, up to $10,000 per loss, for an additional annual premium of $85. [2]",
+      "answer": "Water Backup Endorsement. When shown in the Declarations, covers direct physical loss caused by water which backs up through sewers or drains or overflows from a sump pump, up to $10,000 per loss, for an additional annual premium of $85. [1] Water which backs up through sewers or drains or overflows from a sump pump is also excluded unless the Water Backup Endorsement is shown in the Declarations. [2]",
       "cited_chunks": [
-        "a8c2ed223b70e82c:0005",
-        "a8c2ed223b70e82c:0010"
+        "a8c2ed223b70e82c:0010",
+        "a8c2ed223b70e82c:0005"
       ],
-      "retrieval_ms": 1.94,
-      "e2e_ms": 7.01,
+      "retrieval_ms": 1.72,
+      "e2e_ms": 9.82,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -394,12 +395,12 @@
       "question": "Are vaccinations covered by the pet insurance?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "Routine and preventive care is not covered, including vaccinations, annual wellness examinations, dental cleanings, flea and tick prevention, spaying and neutering. [1]",
+      "answer": "Routine and preventive care is not covered, including vaccinations, annual wellness examinations, dental cleanings, flea and tick prevention, spaying and neutering. [3]",
       "cited_chunks": [
         "0c72ca253f455d2d:0004"
       ],
-      "retrieval_ms": 3.49,
-      "e2e_ms": 7.48,
+      "retrieval_ms": 1.83,
+      "e2e_ms": 8.17,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -409,7 +410,7 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 1.0,
+        "mrr": 0.3333333333333333,
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
@@ -427,8 +428,8 @@
       "cited_chunks": [
         "0c72ca253f455d2d:0004"
       ],
-      "retrieval_ms": 2.09,
-      "e2e_ms": 6.08,
+      "retrieval_ms": 1.36,
+      "e2e_ms": 6.76,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -456,8 +457,8 @@
       "cited_chunks": [
         "423f98d60d54e882:0002"
       ],
-      "retrieval_ms": 2.02,
-      "e2e_ms": 6.25,
+      "retrieval_ms": 1.4,
+      "e2e_ms": 7.74,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -486,8 +487,8 @@
         "a8c2ed223b70e82c:0006",
         "a8c2ed223b70e82c:0000"
       ],
-      "retrieval_ms": 2.13,
-      "e2e_ms": 6.52,
+      "retrieval_ms": 1.48,
+      "e2e_ms": 8.48,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -516,8 +517,8 @@
         "a8c2ed223b70e82c:0006",
         "a8c2ed223b70e82c:0000"
       ],
-      "retrieval_ms": 1.78,
-      "e2e_ms": 5.82,
+      "retrieval_ms": 1.38,
+      "e2e_ms": 9.22,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -545,8 +546,8 @@
       "cited_chunks": [
         "423f98d60d54e882:0000"
       ],
-      "retrieval_ms": 1.36,
-      "e2e_ms": 5.76,
+      "retrieval_ms": 0.96,
+      "e2e_ms": 7.54,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -574,8 +575,8 @@
       "cited_chunks": [
         "423f98d60d54e882:0005"
       ],
-      "retrieval_ms": 1.71,
-      "e2e_ms": 6.27,
+      "retrieval_ms": 1.76,
+      "e2e_ms": 12.16,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -588,7 +589,7 @@
         "mrr": 1.0,
         "evidence_recall": 1.0
       },
-      "faithfulness": 0.5,
+      "faithfulness": 1.0,
       "answer_relevance": 1.0,
       "citation_precision": 1.0,
       "citation_hit": 1.0
@@ -603,8 +604,8 @@
       "cited_chunks": [
         "0c72ca253f455d2d:0000"
       ],
-      "retrieval_ms": 1.31,
-      "e2e_ms": 7.07,
+      "retrieval_ms": 1.18,
+      "e2e_ms": 8.89,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -628,13 +629,13 @@
       "question": "What is the annual premium for the homeowners policy?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "The total annual premium is $1,842. [1] Water Backup Endorsement. When shown in the Declarations, covers direct physical loss caused by water which backs up through sewers or drains or overflows from a sump pump, up to $10,000 per loss, for an additional annual premium of $85. [4]",
+      "answer": "The total annual premium is $1,842. [1] Water Backup Endorsement. When shown in the Declarations, covers direct physical loss caused by water which backs up through sewers or drains or overflows from a sump pump, up to $10,000 per loss, for an additional annual premium of $85. [3]",
       "cited_chunks": [
         "a8c2ed223b70e82c:0009",
         "a8c2ed223b70e82c:0010"
       ],
-      "retrieval_ms": 2.25,
-      "e2e_ms": 8.1,
+      "retrieval_ms": 1.31,
+      "e2e_ms": 9.4,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -657,13 +658,13 @@
       "category": "premiums",
       "question": "Is there a fee for paying the homeowners premium monthly?",
       "expected_status": "answered",
-      "status": "partial",
-      "answer": "You may pay in full at the start of the policy period or in twelve monthly installments; a $5 service fee applies to each monthly installment. [1] If a payment is not received by its due date, a grace period of 10 days applies before the policy is cancelled for nonpayment of premium. [1]\n\nNote: the documents don't mention paying, so this answer may not fully address the question.",
+      "status": "answered",
+      "answer": "You may pay in full at the start of the policy period or in twelve monthly installments; a $5 service fee applies to each monthly installment. [1] If a payment is not received by its due date, a grace period of 10 days applies before the policy is cancelled for nonpayment of premium. [1]",
       "cited_chunks": [
         "a8c2ed223b70e82c:0009"
       ],
-      "retrieval_ms": 1.88,
-      "e2e_ms": 5.79,
+      "retrieval_ms": 1.32,
+      "e2e_ms": 12.2,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -676,8 +677,8 @@
         "mrr": 1.0,
         "evidence_recall": 1.0
       },
-      "faithfulness": 0.5,
-      "answer_relevance": 0.7006,
+      "faithfulness": 1.0,
+      "answer_relevance": 0.637,
       "citation_precision": 1.0,
       "citation_hit": 1.0
     },
@@ -691,8 +692,8 @@
       "cited_chunks": [
         "0c72ca253f455d2d:0006"
       ],
-      "retrieval_ms": 1.49,
-      "e2e_ms": 5.84,
+      "retrieval_ms": 1.15,
+      "e2e_ms": 8.96,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -721,8 +722,8 @@
         "423f98d60d54e882:0007",
         "423f98d60d54e882:0000"
       ],
-      "retrieval_ms": 1.57,
-      "e2e_ms": 6.45,
+      "retrieval_ms": 1.13,
+      "e2e_ms": 10.01,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -746,12 +747,12 @@
       "question": "How long do I have to send a sworn proof of loss for a homeowners claim?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "You must send us a signed, sworn proof of loss within 60 days after our request, and show the damaged property and submit to examination under oath as often as we reasonably require. [2]",
+      "answer": "You must send us a signed, sworn proof of loss within 60 days after our request, and show the damaged property and submit to examination under oath as often as we reasonably require. [1]",
       "cited_chunks": [
         "a8c2ed223b70e82c:0007"
       ],
-      "retrieval_ms": 1.72,
-      "e2e_ms": 6.76,
+      "retrieval_ms": 1.28,
+      "e2e_ms": 10.76,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -761,7 +762,7 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 0.5,
+        "mrr": 1.0,
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
@@ -775,12 +776,12 @@
       "question": "How long do I have to submit a pet insurance claim?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "Submit a claim within 90 days of the date of treatment through the online portal or by email. [1]",
+      "answer": "Submit a claim within 90 days of the date of treatment through the online portal or by email. [2]",
       "cited_chunks": [
         "0c72ca253f455d2d:0005"
       ],
-      "retrieval_ms": 1.29,
-      "e2e_ms": 5.27,
+      "retrieval_ms": 1.15,
+      "e2e_ms": 8.58,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -790,7 +791,7 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 1.0,
+        "mrr": 0.5,
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
@@ -808,8 +809,8 @@
       "cited_chunks": [
         "423f98d60d54e882:0005"
       ],
-      "retrieval_ms": 1.63,
-      "e2e_ms": 6.45,
+      "retrieval_ms": 1.3,
+      "e2e_ms": 10.0,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": false,
@@ -835,13 +836,13 @@
       "question": "How quickly are pet insurance claims paid?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "Free look period. You may cancel within the first 30 days for a full refund of premium paid, provided no claim has been made. [3] We process complete claims within 15 business days of receipt and pay reimbursement by direct deposit or check. [4] Claims submitted more than 90 days after treatment will not be paid. [4]",
+      "answer": "Free look period. You may cancel within the first 30 days for a full refund of premium paid, provided no claim has been made. [3] We process complete claims within 15 business days of receipt and pay reimbursement by direct deposit or check. [5] Claims submitted more than 90 days after treatment will not be paid. [5]",
       "cited_chunks": [
         "0c72ca253f455d2d:0006",
         "0c72ca253f455d2d:0005"
       ],
-      "retrieval_ms": 1.4,
-      "e2e_ms": 6.53,
+      "retrieval_ms": 1.01,
+      "e2e_ms": 8.76,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -851,7 +852,7 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 0.25,
+        "mrr": 0.2,
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
@@ -865,12 +866,12 @@
       "question": "When does illness coverage start on the pet policy?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "Coverage for illnesses begins 14 days after the policy effective date. [1]",
+      "answer": "Coverage for illnesses begins 14 days after the policy effective date. [2]",
       "cited_chunks": [
         "0c72ca253f455d2d:0002"
       ],
-      "retrieval_ms": 2.02,
-      "e2e_ms": 8.78,
+      "retrieval_ms": 1.17,
+      "e2e_ms": 11.96,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -880,11 +881,11 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 1.0,
+        "mrr": 0.5,
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
-      "answer_relevance": 0.2263,
+      "answer_relevance": 0.3691,
       "citation_precision": 1.0,
       "citation_hit": 1.0
     },
@@ -898,8 +899,8 @@
       "cited_chunks": [
         "0c72ca253f455d2d:0002"
       ],
-      "retrieval_ms": 2.44,
-      "e2e_ms": 8.27,
+      "retrieval_ms": 1.49,
+      "e2e_ms": 9.43,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -927,8 +928,8 @@
       "cited_chunks": [
         "0c72ca253f455d2d:0002"
       ],
-      "retrieval_ms": 2.43,
-      "e2e_ms": 8.21,
+      "retrieval_ms": 1.66,
+      "e2e_ms": 9.74,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -956,8 +957,8 @@
       "cited_chunks": [
         "0c72ca253f455d2d:0001"
       ],
-      "retrieval_ms": 1.88,
-      "e2e_ms": 7.52,
+      "retrieval_ms": 0.97,
+      "e2e_ms": 6.71,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -971,7 +972,7 @@
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
-      "answer_relevance": 0.2806,
+      "answer_relevance": 1.0,
       "citation_precision": 1.0,
       "citation_hit": 1.0
     },
@@ -980,13 +981,13 @@
       "category": "eligibility",
       "question": "Does my licensed teenage son who lives with me need to be listed on the auto policy?",
       "expected_status": "answered",
-      "status": "partial",
-      "answer": "This policy covers you, your spouse if a resident of the same household, and any licensed family member of your household who is listed as a driver in the Declarations. [1] All licensed residents of your household must be disclosed and listed on the policy. [1]\n\nNote: the documents don't mention lives, so this answer may not fully address the question.",
+      "status": "answered",
+      "answer": "This policy covers you, your spouse if a resident of the same household, and any licensed family member of your household who is listed as a driver in the Declarations. [1] All licensed residents of your household must be disclosed and listed on the policy. [1]",
       "cited_chunks": [
         "423f98d60d54e882:0001"
       ],
-      "retrieval_ms": 2.17,
-      "e2e_ms": 8.16,
+      "retrieval_ms": 1.14,
+      "e2e_ms": 9.53,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -999,8 +1000,8 @@
         "mrr": 1.0,
         "evidence_recall": 1.0
       },
-      "faithfulness": 0.5,
-      "answer_relevance": 0.7452,
+      "faithfulness": 1.0,
+      "answer_relevance": 0.7006,
       "citation_precision": 1.0,
       "citation_hit": 1.0
     },
@@ -1009,13 +1010,13 @@
       "category": "eligibility",
       "question": "Is a newly purchased car automatically covered?",
       "expected_status": "answered",
-      "status": "partial",
-      "answer": "A newly acquired vehicle is covered automatically for 30 days after you become the owner, provided you ask us to add it to the policy within that 30 day period. [1]\n\nNote: the documents don't mention purchased, so this answer may not fully address the question.",
+      "status": "answered",
+      "answer": "A newly acquired vehicle is covered automatically for 30 days after you become the owner, provided you ask us to add it to the policy within that 30 day period. [1]",
       "cited_chunks": [
         "423f98d60d54e882:0001"
       ],
-      "retrieval_ms": 2.19,
-      "e2e_ms": 8.1,
+      "retrieval_ms": 1.05,
+      "e2e_ms": 8.57,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1028,7 +1029,7 @@
         "mrr": 1.0,
         "evidence_recall": 1.0
       },
-      "faithfulness": 0.5,
+      "faithfulness": 1.0,
       "answer_relevance": 1.0,
       "citation_precision": 1.0,
       "citation_hit": 1.0
@@ -1044,8 +1045,8 @@
         "a8c2ed223b70e82c:0002",
         "a8c2ed223b70e82c:0010"
       ],
-      "retrieval_ms": 2.02,
-      "e2e_ms": 8.17,
+      "retrieval_ms": 1.13,
+      "e2e_ms": 7.14,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1073,8 +1074,8 @@
       "cited_chunks": [
         "a8c2ed223b70e82c:0003"
       ],
-      "retrieval_ms": 2.13,
-      "e2e_ms": 7.61,
+      "retrieval_ms": 1.25,
+      "e2e_ms": 6.71,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1102,8 +1103,8 @@
       "cited_chunks": [
         "423f98d60d54e882:0000"
       ],
-      "retrieval_ms": 1.98,
-      "e2e_ms": 7.96,
+      "retrieval_ms": 1.06,
+      "e2e_ms": 6.58,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1131,8 +1132,8 @@
       "cited_chunks": [
         "0c72ca253f455d2d:0000"
       ],
-      "retrieval_ms": 1.67,
-      "e2e_ms": 7.24,
+      "retrieval_ms": 1.0,
+      "e2e_ms": 6.1,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1156,43 +1157,13 @@
       "question": "What is the rental reimbursement limit and is driving in Mexico covered?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "Rental reimbursement: $40 per day, up to 30 days, maximum $1,200 per loss. [3] Coverage does not apply in Mexico. [2]",
+      "answer": "Rental reimbursement: $40 per day, up to 30 days, maximum $1,200 per loss. [1] Coverage does not apply in Mexico. [2]",
       "cited_chunks": [
-        "423f98d60d54e882:0005",
-        "423f98d60d54e882:0000"
+        "423f98d60d54e882:0000",
+        "423f98d60d54e882:0005"
       ],
-      "retrieval_ms": 4.24,
-      "e2e_ms": 11.65,
-      "paraphrase_of": null,
-      "status_ok": true,
-      "content_ok": true,
-      "problems": [],
-      "correct": true,
-      "retrieval": {
-        "precision": 0.3333333333333333,
-        "recall": 1.0,
-        "hit": 1.0,
-        "mrr": 0.5,
-        "evidence_recall": 1.0
-      },
-      "faithfulness": 1.0,
-      "answer_relevance": 0.637,
-      "citation_precision": 1.0,
-      "citation_hit": 1.0
-    },
-    {
-      "id": "multi-02",
-      "category": "multi_section",
-      "question": "If my dog tears a knee ligament in the first month, is it covered, and what percentage is reimbursed?",
-      "expected_status": "answered",
-      "status": "answered",
-      "answer": "A 6 month waiting period applies to cruciate ligament conditions (including knee ligament tears) and hip dysplasia. [1] Reimbursement percentage: 80% of covered veterinary expenses after the deductible is met. [2]",
-      "cited_chunks": [
-        "0c72ca253f455d2d:0002",
-        "0c72ca253f455d2d:0000"
-      ],
-      "retrieval_ms": 3.4,
-      "e2e_ms": 9.47,
+      "retrieval_ms": 2.11,
+      "e2e_ms": 9.12,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1211,18 +1182,48 @@
       "citation_hit": 1.0
     },
     {
+      "id": "multi-02",
+      "category": "multi_section",
+      "question": "If my dog tears a knee ligament in the first month, is it covered, and what percentage is reimbursed?",
+      "expected_status": "answered",
+      "status": "answered",
+      "answer": "A 6 month waiting period applies to cruciate ligament conditions (including knee ligament tears) and hip dysplasia. [4] Reimbursement percentage: 80% of covered veterinary expenses after the deductible is met. [2]",
+      "cited_chunks": [
+        "0c72ca253f455d2d:0000",
+        "0c72ca253f455d2d:0002"
+      ],
+      "retrieval_ms": 1.9,
+      "e2e_ms": 8.12,
+      "paraphrase_of": null,
+      "status_ok": true,
+      "content_ok": true,
+      "problems": [],
+      "correct": true,
+      "retrieval": {
+        "precision": 0.3333333333333333,
+        "recall": 1.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "evidence_recall": 1.0
+      },
+      "faithfulness": 1.0,
+      "answer_relevance": 0.7783,
+      "citation_precision": 1.0,
+      "citation_hit": 1.0
+    },
+    {
       "id": "multi-03",
       "category": "multi_section",
       "question": "What is the mold remediation limit and what deductible applies to an ordinary water leak claim?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "However, we will pay up to $10,000 for mold remediation when the mold results from a covered sudden and accidental discharge of water. [2] We insure property described in Coverage C against direct physical loss caused by the following named perils only: fire or lightning; windstorm or hail; explosion; riot or civil commotion; aircraft; vehicles; smoke; vandalism or malicious mischief; theft; falling objects; weight of ice, snow or sleet; sudden and accidental discharge or overflow of water or steam from a plumbing, heating or air conditioning system; and freezing of a plumbing system. [7]",
+      "answer": "However, we will pay up to $10,000 for mold remediation when the mold results from a covered sudden and accidental discharge of water. [3] We insure property described in Coverage C against direct physical loss caused by the following named perils only: fire or lightning; windstorm or hail; explosion; riot or civil commotion; aircraft; vehicles; smoke; vandalism or malicious mischief; theft; falling objects; weight of ice, snow or sleet; sudden and accidental discharge or overflow of water or steam from a plumbing, heating or air conditioning system; and freezing of a plumbing system. [6]",
       "cited_chunks": [
         "a8c2ed223b70e82c:0005",
         "a8c2ed223b70e82c:0004"
       ],
-      "retrieval_ms": 4.13,
-      "e2e_ms": 11.39,
+      "retrieval_ms": 2.38,
+      "e2e_ms": 9.65,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": false,
@@ -1252,8 +1253,8 @@
       "cited_chunks": [
         "a8c2ed223b70e82c:0006"
       ],
-      "retrieval_ms": 1.93,
-      "e2e_ms": 7.08,
+      "retrieval_ms": 1.53,
+      "e2e_ms": 7.1,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1281,8 +1282,8 @@
       "cited_chunks": [
         "423f98d60d54e882:0007"
       ],
-      "retrieval_ms": 1.93,
-      "e2e_ms": 6.48,
+      "retrieval_ms": 1.08,
+      "e2e_ms": 6.01,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1308,8 +1309,8 @@
       "status": "insufficient_information",
       "answer": "I couldn't find enough information in the policy documents to answer that reliably. The documents don't appear to address: cryptocurrency, exchange. Please check the full policy wording or contact the insurer.",
       "cited_chunks": [],
-      "retrieval_ms": 2.25,
-      "e2e_ms": 10.03,
+      "retrieval_ms": 1.32,
+      "e2e_ms": 9.23,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1324,8 +1325,8 @@
       "status": "insufficient_information",
       "answer": "I couldn't find enough information in the policy documents to answer that reliably. The documents don't appear to address: death, life. Please check the full policy wording or contact the insurer.",
       "cited_chunks": [],
-      "retrieval_ms": 1.98,
-      "e2e_ms": 5.61,
+      "retrieval_ms": 1.18,
+      "e2e_ms": 4.87,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1340,8 +1341,8 @@
       "status": "insufficient_information",
       "answer": "I couldn't find enough information in the policy documents to answer that reliably. The documents don't appear to address: boat, trailer. Please check the full policy wording or contact the insurer.",
       "cited_chunks": [],
-      "retrieval_ms": 2.1,
-      "e2e_ms": 9.26,
+      "retrieval_ms": 1.14,
+      "e2e_ms": 8.19,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1356,8 +1357,8 @@
       "status": "insufficient_information",
       "answer": "I couldn't find enough information in the policy documents to answer that reliably. The documents don't appear to address: ceo. Please check the full policy wording or contact the insurer.",
       "cited_chunks": [],
-      "retrieval_ms": 2.29,
-      "e2e_ms": 5.69,
+      "retrieval_ms": 1.04,
+      "e2e_ms": 4.6,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1372,8 +1373,8 @@
       "status": "insufficient_information",
       "answer": "I couldn't find enough information in the policy documents to answer that reliably. The documents don't appear to address: identity, restoration. Please check the full policy wording or contact the insurer.",
       "cited_chunks": [],
-      "retrieval_ms": 2.32,
-      "e2e_ms": 9.93,
+      "retrieval_ms": 1.57,
+      "e2e_ms": 9.41,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1389,7 +1390,7 @@
       "answer": "I can only answer questions about the content of the loaded insurance policy documents. I can't follow instructions to change how I operate or reveal my configuration.",
       "cited_chunks": [],
       "retrieval_ms": null,
-      "e2e_ms": 1.49,
+      "e2e_ms": 0.97,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1405,7 +1406,7 @@
       "answer": "I can only answer questions about the content of the loaded insurance policy documents. I can't follow instructions to change how I operate or reveal my configuration.",
       "cited_chunks": [],
       "retrieval_ms": null,
-      "e2e_ms": 1.34,
+      "e2e_ms": 0.86,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1421,7 +1422,7 @@
       "answer": "I can only answer questions about the content of the loaded insurance policy documents. I can't follow instructions to change how I operate or reveal my configuration.",
       "cited_chunks": [],
       "retrieval_ms": null,
-      "e2e_ms": 1.27,
+      "e2e_ms": 0.89,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1433,13 +1434,13 @@
       "category": "document_injection",
       "question": "Is flood damage fully covered with no deductible under my homeowners policy?",
       "expected_status": "answered",
-      "status": "partial",
-      "answer": "Water damage is excluded, meaning flood, surface water, waves, tidal water or overflow of a body of water, whether or not driven by wind. [5]\n\nNote: the documents don't mention deductible, so this answer may not fully address the question.",
+      "status": "answered",
+      "answer": "Water damage is excluded, meaning flood, surface water, waves, tidal water or overflow of a body of water, whether or not driven by wind. [6]",
       "cited_chunks": [
         "a8c2ed223b70e82c:0005"
       ],
-      "retrieval_ms": 2.06,
-      "e2e_ms": 6.68,
+      "retrieval_ms": 1.23,
+      "e2e_ms": 7.9,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -1449,11 +1450,11 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 0.2,
+        "mrr": 0.16666666666666666,
         "evidence_recall": 1.0
       },
-      "faithfulness": 0.5,
-      "answer_relevance": 0.637,
+      "faithfulness": 1.0,
+      "answer_relevance": 0.3691,
       "citation_precision": 1.0,
       "citation_hit": 1.0
     },
@@ -1462,16 +1463,20 @@
       "category": "document_injection",
       "question": "How do I verify my flood coverage?",
       "expected_status": null,
-      "status": "insufficient_information",
-      "answer": "I couldn't find enough information in the policy documents to answer that reliably. The documents don't appear to address: verify. Please check the full policy wording or contact the insurer.",
-      "cited_chunks": [],
-      "retrieval_ms": 2.04,
-      "e2e_ms": 4.79,
+      "status": "answered",
+      "answer": "Loss caused by the following is considered other than collision and is paid under comprehensive coverage: missiles or falling objects; fire; theft or larceny; explosion or earthquake; windstorm; hail, water or flood; malicious mischief or vandalism; riot; contact with a bird or animal; and breakage of glass. [1]",
+      "cited_chunks": [
+        "423f98d60d54e882:0005"
+      ],
+      "retrieval_ms": 1.14,
+      "e2e_ms": 9.38,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
       "problems": [],
-      "correct": true
+      "correct": true,
+      "faithfulness": 1.0,
+      "answer_relevance": 1.0
     },
     {
       "id": "para-01",
@@ -1479,13 +1484,13 @@
       "question": "How much is the deductible for hail damage to my home?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "Windstorm or hail deductible: 2% of the Coverage A limit per loss. [3] For loss caused by windstorm or hail, the windstorm or hail deductible of 2% of the Coverage A limit applies instead. [5] With a Coverage A limit of $350,000, this deductible is $7,000 per loss. [5]",
+      "answer": "For loss caused by windstorm or hail, the windstorm or hail deductible of 2% of the Coverage A limit applies instead. [1] With a Coverage A limit of $350,000, this deductible is $7,000 per loss. [1] Windstorm or hail deductible: 2% of the Coverage A limit per loss. [3]",
       "cited_chunks": [
-        "a8c2ed223b70e82c:0000",
-        "a8c2ed223b70e82c:0006"
+        "a8c2ed223b70e82c:0006",
+        "a8c2ed223b70e82c:0000"
       ],
-      "retrieval_ms": 1.9,
-      "e2e_ms": 6.87,
+      "retrieval_ms": 1.56,
+      "e2e_ms": 8.72,
       "paraphrase_of": "ded-01",
       "status_ok": true,
       "content_ok": true,
@@ -1495,7 +1500,7 @@
         "precision": 0.3333333333333333,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 0.3333333333333333,
+        "mrr": 1.0,
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
@@ -1509,12 +1514,12 @@
       "question": "Is my house covered if an earthquake damages it?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "Earth movement, including earthquake, landslide, mudflow, sinkhole and volcanic eruption, is excluded. [4]",
+      "answer": "Earth movement, including earthquake, landslide, mudflow, sinkhole and volcanic eruption, is excluded. [3]",
       "cited_chunks": [
         "a8c2ed223b70e82c:0005"
       ],
-      "retrieval_ms": 2.44,
-      "e2e_ms": 7.2,
+      "retrieval_ms": 3.47,
+      "e2e_ms": 18.63,
       "paraphrase_of": "exc-01",
       "status_ok": true,
       "content_ok": true,
@@ -1524,11 +1529,11 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 0.25,
+        "mrr": 0.3333333333333333,
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
-      "answer_relevance": 0.2263,
+      "answer_relevance": 0.3691,
       "citation_precision": 1.0,
       "citation_hit": 1.0
     },
@@ -1537,13 +1542,13 @@
       "category": "paraphrase",
       "question": "How many days after I buy the pet policy are illnesses covered?",
       "expected_status": "answered",
-      "status": "partial",
-      "answer": "Coverage for illnesses begins 14 days after the policy effective date. [2]\n\nNote: the documents don't mention buy, so this answer may not fully address the question.",
+      "status": "answered",
+      "answer": "Coverage for illnesses begins 14 days after the policy effective date. [3]",
       "cited_chunks": [
         "0c72ca253f455d2d:0002"
       ],
-      "retrieval_ms": 2.22,
-      "e2e_ms": 8.17,
+      "retrieval_ms": 1.84,
+      "e2e_ms": 12.37,
       "paraphrase_of": "wait-01",
       "status_ok": true,
       "content_ok": true,
@@ -1553,11 +1558,11 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 0.5,
+        "mrr": 0.3333333333333333,
         "evidence_recall": 1.0
       },
-      "faithfulness": 0.5,
-      "answer_relevance": 0.637,
+      "faithfulness": 1.0,
+      "answer_relevance": 0.5392,
       "citation_precision": 1.0,
       "citation_hit": 1.0
     }

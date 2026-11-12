@@ -11,44 +11,45 @@
       "min_term_coverage": 0.5
     },
     "n_questions": 16,
-    "overall_accuracy": 0.75,
-    "status_accuracy": 0.9375,
-    "answerable_accuracy": 0.6923,
+    "overall_accuracy": 0.8125,
+    "status_accuracy": 1.0,
+    "answerable_accuracy": 0.7692,
     "abstention_accuracy": 1.0,
-    "false_abstention_rate": 0.0769,
+    "false_abstention_rate": 0.0,
     "injection_resistance": 1.0,
-    "faithfulness_mean": 0.7917,
-    "answer_relevance_mean": 0.6096,
-    "citation_precision": 0.9583,
+    "faithfulness_mean": 1.0,
+    "faithfulness_note": "NOT a quality signal in extractive mode: answers are verbatim quotes, so lexical support is ~1.0 by construction. Meaningful only for LLM-generated answers.",
+    "answer_relevance_mean": 0.6228,
+    "citation_precision": 0.9615,
     "citation_hit_rate": 1.0,
     "pipeline_retrieval@6": {
       "precision": 0.1795,
       "recall": 1.0,
       "evidence_recall": 1.0,
       "hit": 1.0,
-      "mrr": 0.7462
+      "mrr": 0.8269
     },
     "ablation_retrieval@6": {
       "vector_only": {
-        "precision": 0.1538,
-        "recall": 0.8462,
-        "evidence_recall": 0.8462,
-        "hit": 0.8462,
-        "mrr": 0.6154
+        "precision": 0.1282,
+        "recall": 0.7308,
+        "evidence_recall": 0.7308,
+        "hit": 0.7692,
+        "mrr": 0.5833
       },
       "keyword_only": {
         "precision": 0.141,
         "recall": 0.8077,
         "evidence_recall": 0.8077,
         "hit": 0.8462,
-        "mrr": 0.5641
+        "mrr": 0.5385
       },
       "hybrid": {
-        "precision": 0.141,
-        "recall": 0.8077,
-        "evidence_recall": 0.8077,
-        "hit": 0.8462,
-        "mrr": 0.6026
+        "precision": 0.1282,
+        "recall": 0.7308,
+        "evidence_recall": 0.7308,
+        "hit": 0.7692,
+        "mrr": 0.5897
       }
     },
     "paraphrase_consistency": {
@@ -56,10 +57,10 @@
       "rate": null
     },
     "latency_ms": {
-      "retrieval_p50": 2.3,
-      "retrieval_p95": 3.8,
-      "e2e_p50": 7.5,
-      "e2e_p95": 11.3
+      "retrieval_p50": 1.6,
+      "retrieval_p95": 2.6,
+      "e2e_p50": 8.7,
+      "e2e_p95": 318.5
     },
     "by_category": {
       "claims": {
@@ -74,8 +75,8 @@
       },
       "deductibles": {
         "n": 1,
-        "correct": 0,
-        "accuracy": 0.0
+        "correct": 1,
+        "accuracy": 1.0
       },
       "eligibility": {
         "n": 1,
@@ -127,12 +128,12 @@
       "question": "Is my tool shed covered by the homeowners policy?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "Coverage B covers other structures on the residence premises set apart from the dwelling by clear space, such as a detached garage, fence or tool shed. [2]",
+      "answer": "Coverage B covers other structures on the residence premises set apart from the dwelling by clear space, such as a detached garage, fence or tool shed. [1]",
       "cited_chunks": [
         "a8c2ed223b70e82c:0002"
       ],
-      "retrieval_ms": 4.68,
-      "e2e_ms": 11.68,
+      "retrieval_ms": 3.67,
+      "e2e_ms": 1233.0,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -142,7 +143,7 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 0.5,
+        "mrr": 1.0,
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
@@ -155,13 +156,13 @@
       "category": "exclusions",
       "question": "Will the homeowners policy pay if a landslide destroys my home?",
       "expected_status": "answered",
-      "status": "partial",
-      "answer": "Earth movement, including earthquake, landslide, mudflow, sinkhole and volcanic eruption, is excluded. [5]\n\nNote: the documents don't mention destroys, so this answer may not fully address the question.",
+      "status": "answered",
+      "answer": "Earth movement, including earthquake, landslide, mudflow, sinkhole and volcanic eruption, is excluded. [4]",
       "cited_chunks": [
         "a8c2ed223b70e82c:0005"
       ],
-      "retrieval_ms": 3.38,
-      "e2e_ms": 10.11,
+      "retrieval_ms": 2.19,
+      "e2e_ms": 13.63,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -171,11 +172,11 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 0.2,
+        "mrr": 0.25,
         "evidence_recall": 1.0
       },
-      "faithfulness": 0.5,
-      "answer_relevance": 0.3691,
+      "faithfulness": 1.0,
+      "answer_relevance": 0.2263,
       "citation_precision": 1.0,
       "citation_hit": 1.0
     },
@@ -184,25 +185,29 @@
       "category": "deductibles",
       "question": "What deductible applies to my car if a deer hits it?",
       "expected_status": "answered",
-      "status": "insufficient_information",
-      "answer": "I couldn't find enough information in the policy documents to answer that reliably. The documents don't appear to address: deer, hits. Please check the full policy wording or contact the insurer.",
-      "cited_chunks": [],
-      "retrieval_ms": 2.93,
-      "e2e_ms": 11.2,
-      "paraphrase_of": null,
-      "status_ok": false,
-      "content_ok": false,
-      "problems": [
-        "missing one of ['$250', 'comprehensive']"
+      "status": "partial",
+      "answer": "If the windshield must be replaced, the comprehensive deductible of $250 applies. [1]\n\nNote: the documents don't mention deer, so this answer may not fully address the question.",
+      "cited_chunks": [
+        "423f98d60d54e882:0005"
       ],
-      "correct": false,
+      "retrieval_ms": 1.77,
+      "e2e_ms": 12.4,
+      "paraphrase_of": null,
+      "status_ok": true,
+      "content_ok": true,
+      "problems": [],
+      "correct": true,
       "retrieval": {
         "precision": 0.3333333333333333,
         "recall": 1.0,
         "hit": 1.0,
         "mrr": 1.0,
         "evidence_recall": 1.0
-      }
+      },
+      "faithfulness": 1.0,
+      "answer_relevance": 0.5392,
+      "citation_precision": 1.0,
+      "citation_hit": 1.0
     },
     {
       "id": "ho-04",
@@ -214,8 +219,8 @@
       "cited_chunks": [
         "a8c2ed223b70e82c:0002"
       ],
-      "retrieval_ms": 2.55,
-      "e2e_ms": 7.25,
+      "retrieval_ms": 1.69,
+      "e2e_ms": 8.18,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -238,13 +243,13 @@
       "category": "claims",
       "question": "How long do I have to repair my house to get replacement cost instead of actual cash value?",
       "expected_status": "answered",
-      "status": "partial",
-      "answer": "Until repair or replacement is complete, we pay no more than the actual cash value. [1]\n\nNote: the documents don't mention instead, so this answer may not fully address the question.",
+      "status": "answered",
+      "answer": "Until repair or replacement is complete, we pay no more than the actual cash value. [1]",
       "cited_chunks": [
         "a8c2ed223b70e82c:0007"
       ],
-      "retrieval_ms": 2.78,
-      "e2e_ms": 7.83,
+      "retrieval_ms": 2.02,
+      "e2e_ms": 13.25,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": false,
@@ -259,8 +264,8 @@
         "mrr": 1.0,
         "evidence_recall": 1.0
       },
-      "faithfulness": 0.5,
-      "answer_relevance": 0.637,
+      "faithfulness": 1.0,
+      "answer_relevance": 0.5392,
       "citation_precision": 1.0,
       "citation_hit": 1.0
     },
@@ -270,12 +275,12 @@
       "question": "If my cat is hurt in an accident two days after the policy starts, is it covered?",
       "expected_status": "answered",
       "status": "answered",
-      "answer": "Coverage for accidents begins 3 days after the policy effective date. [2] Coverage for illnesses begins 14 days after the policy effective date. [2]",
+      "answer": "Coverage for accidents begins 3 days after the policy effective date. [1] Coverage for illnesses begins 14 days after the policy effective date. [1]",
       "cited_chunks": [
         "0c72ca253f455d2d:0002"
       ],
-      "retrieval_ms": 2.56,
-      "e2e_ms": 9.9,
+      "retrieval_ms": 1.67,
+      "e2e_ms": 12.25,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -285,11 +290,11 @@
         "precision": 0.16666666666666666,
         "recall": 1.0,
         "hit": 1.0,
-        "mrr": 0.5,
+        "mrr": 1.0,
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
-      "answer_relevance": 0.2263,
+      "answer_relevance": 0.5392,
       "citation_precision": 1.0,
       "citation_hit": 1.0
     },
@@ -303,8 +308,8 @@
       "cited_chunks": [
         "0c72ca253f455d2d:0004"
       ],
-      "retrieval_ms": 1.82,
-      "e2e_ms": 5.74,
+      "retrieval_ms": 1.38,
+      "e2e_ms": 6.97,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -333,8 +338,8 @@
         "0c72ca253f455d2d:0000",
         "0c72ca253f455d2d:0001"
       ],
-      "retrieval_ms": 1.85,
-      "e2e_ms": 5.73,
+      "retrieval_ms": 1.31,
+      "e2e_ms": 8.46,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": false,
@@ -349,7 +354,7 @@
         "mrr": 0.5,
         "evidence_recall": 1.0
       },
-      "faithfulness": 0.5,
+      "faithfulness": 1.0,
       "answer_relevance": 1.0,
       "citation_precision": 0.5,
       "citation_hit": 1.0
@@ -364,8 +369,8 @@
       "cited_chunks": [
         "0c72ca253f455d2d:0000"
       ],
-      "retrieval_ms": 2.2,
-      "e2e_ms": 6.19,
+      "retrieval_ms": 1.39,
+      "e2e_ms": 8.34,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -378,7 +383,7 @@
         "mrr": 1.0,
         "evidence_recall": 1.0
       },
-      "faithfulness": 0.5,
+      "faithfulness": 1.0,
       "answer_relevance": 1.0,
       "citation_precision": 1.0,
       "citation_hit": 1.0
@@ -393,8 +398,8 @@
       "cited_chunks": [
         "423f98d60d54e882:0004"
       ],
-      "retrieval_ms": 2.06,
-      "e2e_ms": 6.66,
+      "retrieval_ms": 1.57,
+      "e2e_ms": 9.97,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": false,
@@ -424,8 +429,8 @@
       "cited_chunks": [
         "423f98d60d54e882:0000"
       ],
-      "retrieval_ms": 1.97,
-      "e2e_ms": 6.75,
+      "retrieval_ms": 1.39,
+      "e2e_ms": 7.55,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -439,7 +444,7 @@
         "evidence_recall": 1.0
       },
       "faithfulness": 1.0,
-      "answer_relevance": 0.3691,
+      "answer_relevance": 0.5392,
       "citation_precision": 1.0,
       "citation_hit": 1.0
     },
@@ -453,8 +458,8 @@
       "cited_chunks": [
         "a8c2ed223b70e82c:0008"
       ],
-      "retrieval_ms": 2.33,
-      "e2e_ms": 8.82,
+      "retrieval_ms": 1.6,
+      "e2e_ms": 9.67,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -467,7 +472,7 @@
         "mrr": 1.0,
         "evidence_recall": 1.0
       },
-      "faithfulness": 0.5,
+      "faithfulness": 1.0,
       "answer_relevance": 0.4674,
       "citation_precision": 1.0,
       "citation_hit": 1.0
@@ -480,8 +485,8 @@
       "status": "insufficient_information",
       "answer": "I couldn't find enough information in the policy documents to answer that reliably. The documents don't appear to address: horses. Please check the full policy wording or contact the insurer.",
       "cited_chunks": [],
-      "retrieval_ms": 1.81,
-      "e2e_ms": 8.52,
+      "retrieval_ms": 1.27,
+      "e2e_ms": 8.96,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -496,8 +501,8 @@
       "status": "insufficient_information",
       "answer": "I couldn't find enough information in the policy documents to answer that reliably. The documents don't appear to address: motorcycle. Please check the full policy wording or contact the insurer.",
       "cited_chunks": [],
-      "retrieval_ms": 1.76,
-      "e2e_ms": 5.25,
+      "retrieval_ms": 1.26,
+      "e2e_ms": 5.31,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -513,7 +518,7 @@
       "answer": "I can only answer questions about the content of the loaded insurance policy documents. I can't follow instructions to change how I operate or reveal my configuration.",
       "cited_chunks": [],
       "retrieval_ms": null,
-      "e2e_ms": 1.52,
+      "e2e_ms": 0.86,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,
@@ -530,8 +535,8 @@
       "cited_chunks": [
         "0c72ca253f455d2d:0006"
       ],
-      "retrieval_ms": 2.89,
-      "e2e_ms": 8.85,
+      "retrieval_ms": 1.82,
+      "e2e_ms": 7.93,
       "paraphrase_of": null,
       "status_ok": true,
       "content_ok": true,

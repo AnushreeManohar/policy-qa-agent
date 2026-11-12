@@ -9,7 +9,7 @@ STOPWORDS = frozenset(
     is it its me my no not of on or our please so such than that the their them then there these they
     this those to under up was we were what when where which while who whom why will with would you
     your yours am any all also about after before being both each few more most other same some very
-    just should shall may might must""".split()
+    just should shall may might must per""".split()
 )
 
 _TOKEN = re.compile(r"[a-z0-9]+(?:'[a-z]+)?")
@@ -25,13 +25,17 @@ def stem(tok: str) -> str:
     """
     for suf, rep in (("ies", "y"), ("sses", "ss"), ("ments", ""), ("ment", ""), ("ing", ""), ("ed", ""),
                      ("es", ""), ("s", "")):
-        if tok.endswith(suf) and len(tok) - len(suf) >= 4:
+        # Plural "s" needs only a 3-letter remainder (audit: "dogs", "pets", "days" never matched "dog", "pet").
+        if tok.endswith(suf) and len(tok) - len(suf) >= (3 if suf == "s" else 4):
             if suf == "s" and tok.endswith(("ss", "us", "is")):
                 continue
             tok = tok[: len(tok) - len(suf)] + rep
             break
     if len(tok) >= 4 and tok.endswith("e") and not tok.endswith("ee"):
         tok = tok[:-1]
+    # Adverb/adjective "-ly" (audit H2: "monthly" never matched "month"). "-ily" is left alone (family).
+    if tok.endswith("ly") and not tok.endswith("ily") and len(tok) - 2 >= 4:
+        tok = tok[:-2]
     return tok
 
 

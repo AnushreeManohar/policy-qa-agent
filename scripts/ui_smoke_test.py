@@ -132,8 +132,10 @@ def main() -> int:
 
         def upload_flow() -> None:
             pdf = ROOT / "data" / "policies" / "northwind_pet_health.pdf"
+            # The key field is shown up front when the server requires a key (audit C2); a wrong key is rejected.
+            page.fill(".upload__key input", "wrong-key")
             page.set_input_files("#pdf", str(pdf))
-            expect(page.locator(".upload__msg")).to_contain_text("API key", timeout=10_000)
+            expect(page.locator(".upload__msg--error")).to_contain_text("API key", timeout=10_000)
             page.fill(".upload__key input", args.api_key)
             page.set_input_files("#pdf", str(pdf))
             expect(page.locator(".upload__msg")).to_contain_text("already in the library", timeout=10_000)

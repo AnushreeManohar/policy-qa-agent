@@ -18,7 +18,7 @@ WORKDIR /app
 # Install dependencies first (cached layer), pinned to the versions the test suite ran against.
 COPY backend/pyproject.toml backend/constraints.txt backend/README.md ./backend/
 RUN mkdir -p backend/src/policyqa && touch backend/src/policyqa/__init__.py \
- && pip install -c backend/constraints.txt "./backend[anthropic,openai]" \
+ && pip install -c backend/constraints.txt "./backend[anthropic,openai,semantic]" \
  && pip uninstall -y policyqa
 
 COPY backend/ ./backend/

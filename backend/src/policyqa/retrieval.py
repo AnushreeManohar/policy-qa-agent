@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 
 from policyqa.config import Settings
 from policyqa.embeddings import Embedder
-from policyqa.grounding import query_terms
+from policyqa.grounding import query_words
 from policyqa.models import RetrievedChunk
 from policyqa.store.base import SearchHit, VectorStore
 
@@ -46,7 +46,7 @@ class HybridRetriever:
         t1 = time.perf_counter()
         vec_hits = self.store.vector_search(qvec, s.retrieval_candidates, policy_type)
         t2 = time.perf_counter()
-        kw_hits = self.store.keyword_search(query_terms(query), s.retrieval_candidates, policy_type)
+        kw_hits = self.store.keyword_search(query_words(query), s.retrieval_candidates, policy_type)
         t3 = time.perf_counter()
 
         by_id: dict[str, SearchHit] = {}
@@ -60,7 +60,25 @@ class HybridRetriever:
             [[h.chunk.chunk_id for h in vec_hits], [h.chunk.chunk_id for h in kw_hits]], k=s.rrf_k
         )
         best_possible = 2.0 / (s.rrf_k + 1)
-        ranked = sorted(fused.items(), key=lambda kv: kv[1], reverse=True)[:top_k]
+        # Near-duplicate suppression (audit M2): a clause repeated across documents or endorsements otherwise
+        # fills every slot with copies and crowds out other evidence. Keep the best-ranked copy only.
+        # Flagged (instruction-like) chunks may never be evidence, so they must not use up evidence slots either:
+        # during the audit two poisoned chunks pushed the real flood exclusion out of the top 6. They are still
+        # returned AFTER the evidence, so the UI can show them as ignored.
+        ranked, flagged, seen_text, dropped = [], [], set(), 0
+        for cid, score in sorted(fused.items(), key=lambda kv: kv[1], reverse=True):
+            key = " ".join(by_id[cid].chunk.text.lower().split())
+            if key in seen_text:
+                dropped += 1
+                continue
+            seen_text.add(key)
+            if by_id[cid].chunk.flags:
+                flagged.append((cid, score))
+                continue
+            ranked.append((cid, score))
+            if len(ranked) == top_k:
+                break
+        ranked += flagged[:2]
         chunks = [
             RetrievedChunk(
                 chunk=by_id[cid].chunk, title=by_id[cid].title, filename=by_id[cid].filename,
@@ -72,4 +90,5 @@ class HybridRetriever:
         total = (time.perf_counter() - t0) * 1000
         return RetrievalResult(chunks, total, {
             "embed_ms": (t1 - t0) * 1000, "vector_ms": (t2 - t1) * 1000, "keyword_ms": (t3 - t2) * 1000,
+            "duplicates_dropped": dropped,
         })

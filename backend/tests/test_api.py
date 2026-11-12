@@ -71,28 +71,61 @@ def test_sql_like_question_is_just_text(c):
     assert c.get("/api/health").json()["documents"] == 4
 
 
+KEY = {"X-API-Key": "k3y"}
+
+
 def test_upload_new_duplicate_and_invalid_files():
-    s = make_settings()
+    s = make_settings(api_key="k3y")
     with client(s, store=MemoryStore("hashing-1024")) as tc:
         data = POLICIES[0].read_bytes()
-        r1 = tc.post("/api/documents", files={"file": ("p.pdf", data, "application/pdf")})
+        r1 = tc.post("/api/documents", files={"file": ("p.pdf", data, "application/pdf")}, headers=KEY)
         assert r1.status_code == 201 and r1.json()["status"] == "ingested" and r1.json()["num_pages"] >= 3
-        r2 = tc.post("/api/documents", files={"file": ("again.pdf", data, "application/pdf")})
+        r2 = tc.post("/api/documents", files={"file": ("again.pdf", data, "application/pdf")}, headers=KEY)
         assert r2.status_code == 200 and r2.json()["status"] == "duplicate"
-        r3 = tc.post("/api/documents", files={"file": ("x.pdf", b"not a pdf", "application/pdf")})
+        r3 = tc.post("/api/documents", files={"file": ("x.pdf", b"not a pdf", "application/pdf")}, headers=KEY)
         assert r3.status_code == 422 and r3.json()["error"] == "File is not a PDF."
-        r4 = tc.post("/api/documents", files={"file": ("x.pdf", b"", "application/pdf")})
+        r4 = tc.post("/api/documents", files={"file": ("x.pdf", b"", "application/pdf")}, headers=KEY)
         assert r4.status_code == 422
-        r5 = tc.post("/api/documents", files={"file": ("x.txt", b"hello", "text/plain")})
+        r5 = tc.post("/api/documents", files={"file": ("x.txt", b"hello", "text/plain")}, headers=KEY)
         assert r5.status_code == 415
 
 
+def test_anonymous_uploads_are_rejected_by_default():
+    # Audit C2: with no API_KEY configured, anyone could add a fake "policy" and change the answers.
+    with client(make_settings(), store=MemoryStore("hashing-1024")) as tc:
+        assert tc.get("/api/health").json()["uploads_enabled"] is False
+        r = tc.post("/api/documents", files={"file": ("p.pdf", POLICIES[0].read_bytes(), "application/pdf")})
+        assert r.status_code == 403 and "API_KEY" in r.json()["error"]
+        assert tc.get("/api/documents").json() == []
+
+
+def test_empty_api_key_means_unset():
+    from policyqa.config import Settings
+
+    assert Settings(_env_file=None, api_key="", anthropic_api_key="  ").api_key is None
+
+
+def test_anonymous_uploads_only_with_explicit_opt_in():
+    with client(make_settings(allow_anonymous_uploads=True), store=MemoryStore("hashing-1024")) as tc:
+        r = tc.post("/api/documents", files={"file": ("p.pdf", POLICIES[0].read_bytes(), "application/pdf")})
+        assert r.status_code == 201
+
+
 def test_upload_size_limit():
-    s = make_settings(max_upload_mb=1)
+    s = make_settings(max_upload_mb=1, api_key="k3y")
     with client(s, store=MemoryStore("hashing-1024")) as tc:
         big = b"%PDF-1.4\n" + b"0" * (1024 * 1024 + 10)
-        r = tc.post("/api/documents", files={"file": ("big.pdf", big, "application/pdf")})
+        r = tc.post("/api/documents", files={"file": ("big.pdf", big, "application/pdf")}, headers=KEY)
         assert r.status_code == 413
+
+
+def test_question_limit_is_configurable():
+    # Audit L2: the schema hardcoded 1000 characters, so MAX_QUESTION_CHARS above 1000 had no effect.
+    long_q = "What is the collision deductible " + "please " * 200
+    with client(make_settings(max_question_chars=2000)) as tc:
+        assert tc.post("/api/ask", json={"question": long_q}).status_code == 200
+    with client(make_settings()) as tc:
+        assert tc.post("/api/ask", json={"question": long_q}).status_code == 422
 
 
 def test_uploads_can_be_disabled():
@@ -152,9 +185,16 @@ def test_database_failure_returns_503_without_internals():
         assert tc.get("/api/documents").status_code == 503
 
 
+def test_llm_failure_degrades_to_extractive_answer():
+    model = ScriptedChatModel([RuntimeError("anthropic 529 overloaded")], plan=["collision deductible auto"])
+    with client(make_settings(llm_provider="anthropic"), chat_model=model) as tc:
+        body = tc.post("/api/ask", json={"question": "What is the collision deductible?"}).json()
+        assert body["degraded"] is True and "$500" in body["answer"]
+
+
 def test_llm_failure_returns_502_without_internals():
     model = ScriptedChatModel([RuntimeError("anthropic 529 overloaded key=sk-ant-xyz")], plan=["deductible"])
-    with client(make_settings(llm_provider="anthropic"), chat_model=model) as tc:
+    with client(make_settings(llm_provider="anthropic", llm_fallback_extractive=False), chat_model=model) as tc:
         r = tc.post("/api/ask", json={"question": "What is the collision deductible?"})
         assert r.status_code == 502 and "sk-ant" not in r.text and "overloaded" not in r.text
 

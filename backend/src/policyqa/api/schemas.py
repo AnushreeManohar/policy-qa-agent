@@ -6,7 +6,8 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class AskRequest(BaseModel):
-    question: str = Field(..., min_length=3, max_length=1000, examples=["What is the windstorm deductible?"])
+    # Hard cap only; the configurable limit (MAX_QUESTION_CHARS) is enforced in the route (audit L2).
+    question: str = Field(..., min_length=3, max_length=4000, examples=["What is the windstorm deductible?"])
     policy_type: str | None = Field(None, pattern=r"^[a-z_]{2,30}$", examples=["homeowners"])
     include_trace: bool = False
 
@@ -56,6 +57,7 @@ class AskResponse(BaseModel):
     missing_terms: list[str]
     faithfulness: float | None
     mode: str
+    degraded: bool = False
     latency_ms: float
     retrieval_ms: float | None
     trace: list[dict] | None = None
@@ -88,6 +90,7 @@ class HealthOut(BaseModel):
     embedding_model: str
     documents: int | None
     uploads_enabled: bool
+    upload_requires_key: bool
     auth_required_for_ask: bool
 
 

@@ -10,7 +10,7 @@ import numpy as np
 
 from policyqa.models import Chunk, Document
 from policyqa.store.base import DocumentSummary, SearchHit
-from policyqa.text import tokens
+from policyqa.text import stem, tokens
 
 
 class MemoryStore:
@@ -71,8 +71,10 @@ class MemoryStore:
         return [SearchHit(pairs[i][0], pairs[i][1].title, pairs[i][1].filename, pairs[i][1].policy_type,
                           float(sims[i])) for i in order]
 
-    def keyword_search(self, query_terms: list[str], k: int, policy_type: str | None = None) -> list[SearchHit]:
+    def keyword_search(self, query_words: list[str], k: int, policy_type: str | None = None) -> list[SearchHit]:
+        """BM25 over raw query words, stemmed with the same stemmer used to tokenise chunks."""
         pairs = self._chunks(policy_type)
+        query_terms = [stem(w) for w in query_words]
         if not pairs or not query_terms:
             return []
         docs_toks = [tokens(f"{c.section or ''} {c.text}") for c, _ in pairs]

@@ -39,6 +39,7 @@ export interface AskResponse {
   missing_terms: string[];
   faithfulness: number | null;
   mode: string;
+  degraded: boolean;
   latency_ms: number;
   retrieval_ms: number | null;
 }
@@ -59,6 +60,7 @@ export interface Health {
   embedding_model: string;
   documents: number | null;
   uploads_enabled: boolean;
+  upload_requires_key: boolean;
   auth_required_for_ask: boolean;
 }
 

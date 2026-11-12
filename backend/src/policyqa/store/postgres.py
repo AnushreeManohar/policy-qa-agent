@@ -172,8 +172,10 @@ class PostgresStore:
             rows = conn.execute(sql, {"q": np.asarray(query_vec, dtype=np.float32), "k": k, **params}).fetchall()
         return [_row_to_hit(r) for r in rows]
 
-    def keyword_search(self, query_terms: list[str], k: int, policy_type: str | None = None) -> list[SearchHit]:
-        terms = sorted({t for t in query_terms if _SAFE_TERM.match(t)})
+    def keyword_search(self, query_words: list[str], k: int, policy_type: str | None = None) -> list[SearchHit]:
+        """Full-text search over RAW words: PostgreSQL's English stemmer is applied by to_tsquery, matching
+        how to_tsvector indexed the chunks. Words are restricted to [a-z0-9] and bound as a parameter."""
+        terms = sorted({t for t in (w.lower() for w in query_words) if _SAFE_TERM.match(t)})
         if not terms:
             return []
         tsquery = " | ".join(terms)  # OR semantics: natural-language questions rarely match every term

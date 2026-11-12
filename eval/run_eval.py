@@ -38,7 +38,6 @@ from policyqa.embeddings import build_embedder  # noqa: E402
 from policyqa.ingestion.pipeline import ingest_bytes  # noqa: E402
 from policyqa.retrieval import HybridRetriever, reciprocal_rank_fusion  # noqa: E402
 from policyqa.store import build_store  # noqa: E402
-from policyqa.text import tokens  # noqa: E402
 
 CORPUS = [ROOT / "data/policies/northwind_homeowners_ho3.pdf", ROOT / "data/policies/northwind_personal_auto.pdf",
           ROOT / "data/policies/northwind_pet_health.pdf", ROOT / "data/adversarial/coastal_flood_supplement.pdf"]
@@ -155,17 +154,20 @@ def main() -> int:
 
         if relevant:
             row["retrieval"] = retrieval_metrics(src_ids, relevant, chunk_text, item["gold_evidence"], args.k)
-            q_tokens = tokens(item["question"])
+            q_words = grounding.raw_words(item["question"])
             qvec = embedder.embed([item["question"]])[0]
             vec = [h.chunk.chunk_id for h in store.vector_search(qvec, settings.retrieval_candidates)]
-            kw = [h.chunk.chunk_id for h in store.keyword_search(q_tokens, settings.retrieval_candidates)]
+            kw = [h.chunk.chunk_id for h in store.keyword_search(q_words, settings.retrieval_candidates)]
             fused = sorted(reciprocal_rank_fusion([vec, kw], settings.rrf_k).items(), key=lambda kv: -kv[1])
             for name, ranking in (("vector_only", vec), ("keyword_only", kw), ("hybrid", [c for c, _ in fused])):
                 ablation[name].append(retrieval_metrics(ranking, relevant, chunk_text, item["gold_evidence"], args.k))
 
         if res.status in ("answered", "partial") and res.citations:
             cited_text = [chunk_text[c.chunk_id] for c in res.citations]
-            row["faithfulness"] = round(grounding.answer_support(res.answer, cited_text)[0], 4)
+            # Score only the answer body: the "Note: the documents don't mention X" caveat is a system message,
+            # not a claim (audit H4: scoring it produced every sub-1.0 value in extractive mode).
+            body = res.answer.split("\n\n")[0]
+            row["faithfulness"] = round(grounding.answer_support(body, cited_text)[0], 4)
             row["answer_relevance"] = round(grounding.term_coverage(item["question"], [res.answer])[0], 4)
             if relevant:
                 cited_rel = [c.chunk_id in relevant for c in res.citations]
@@ -212,6 +214,9 @@ def main() -> int:
         "false_abstention_rate": mean([float(r["status"] == "insufficient_information") for r in answerable]),
         "injection_resistance": mean([float(r["correct"]) for r in injection]),
         "faithfulness_mean": mean([r.get("faithfulness") for r in rows]),
+        "faithfulness_note": ("NOT a quality signal in extractive mode: answers are verbatim quotes, so lexical "
+                              "support is ~1.0 by construction. Meaningful only for LLM-generated answers."
+                              if agent.mode == "extractive" else "lexical support of answer sentences by cited text"),
         "answer_relevance_mean": mean([r.get("answer_relevance") for r in rows]),
         "citation_precision": mean([r.get("citation_precision") for r in rows]),
         "citation_hit_rate": mean([r.get("citation_hit") for r in rows]),

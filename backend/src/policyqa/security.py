@@ -25,6 +25,14 @@ _INJECTION_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
         r"\b(AI|assistant|language model|LLM|chatbot)s?\b.{0,40}\b(must|should|will|shall)\b.{0,20}"
         r"\b(say|tell|respond|answer|state|reply|output)\b", re.I | re.S)),
     ("fake_role_tag", re.compile(r"(</?\s*(system|assistant|user|instructions?)\s*>|\[/?INST\]|<\|im_start\|>)", re.I)),
+    # Added in the audit (H3) after a document injection without trigger words got through. Case A41 was
+    # used to design these two patterns, so A41 passing afterwards is not independent evidence.
+    ("addressed_to_ai", re.compile(
+        r"\b(note|message|instructions?|notice)\s+(to|for)\s+(the\s+)?(reader'?s\s+)?"
+        r"(ai|assistant|software|model|llm|chatbot|bot|summari[sz]er)\b", re.I)),
+    ("summarizer_directive", re.compile(
+        r"\bwhen\s+(summari[sz]ing|answering|responding|processing)\b.{0,60}\b(state|say|tell|claim|respond|"
+        r"answer|report)\b", re.I | re.S)),
     ("exfiltration", re.compile(
         r"\b(send|post|email|upload)\b.{0,40}\b(api key|password|credentials|secrets?)\b", re.I | re.S)),
 ]

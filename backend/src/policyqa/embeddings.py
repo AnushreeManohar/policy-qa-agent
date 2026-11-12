@@ -76,7 +76,34 @@ class OpenAIEmbedder:
         return vecs / np.where(norms == 0, 1, norms)
 
 
+class WordVectorEmbedder:
+    """Mean of pretrained 300-d word vectors (spaCy en_core_web_md, GloVe-style) over content words.
+    A genuine pretrained semantic signal that runs offline; much weaker than a transformer embedder."""
+
+    def __init__(self, settings: Settings) -> None:
+        from policyqa.semantics import word_vectors, words_in
+
+        wv = word_vectors()
+        if wv is None:
+            raise RuntimeError("EMBEDDING_PROVIDER=wordvec requires the semantic extra: pip install -e '.[semantic]'")
+        if settings.embedding_dim != 300:
+            raise RuntimeError("EMBEDDING_PROVIDER=wordvec produces 300-d vectors; set EMBEDDING_DIM=300")
+        self._wv, self._words = wv, words_in
+        self.dim, self.name = 300, "wordvec-en_core_web_md-300"
+
+    def embed(self, texts: list[str]) -> np.ndarray:
+        out = np.zeros((len(texts), self.dim), dtype=np.float32)
+        for i, text in enumerate(texts):
+            vecs = [v for w in self._words([text]) if (v := self._wv.vector(w)) is not None]
+            if vecs:
+                m = np.mean(vecs, axis=0)
+                out[i] = m / (np.linalg.norm(m) or 1.0)
+        return out
+
+
 def build_embedder(settings: Settings) -> Embedder:
     if settings.embedding_provider == "openai":
         return OpenAIEmbedder(settings)
+    if settings.embedding_provider == "wordvec":
+        return WordVectorEmbedder(settings)
     return HashingEmbedder(settings.embedding_dim)

@@ -10,7 +10,8 @@ from __future__ import annotations
 import math
 import re
 
-from policyqa.text import sentences, stem, tokens
+from policyqa.semantics import word_vectors, words_in
+from policyqa.text import STOPWORDS, sentences, stem, tokens
 
 # Words that appear in nearly every policy question/document and therefore say nothing about whether
 # the documents address *this* question.
@@ -93,6 +94,31 @@ def term_groups(question: str) -> list[tuple[str, set[str]]]:
     return [(t, {t, *_THES.get(t, ())}) for t in key_terms(question)]
 
 
+_RAW_WORD = re.compile(r"[a-z0-9]+")
+_THOUSANDS = re.compile(r"(?<=\d),(?=\d{3}\b)")
+
+
+def raw_words(question: str) -> list[str]:
+    """Lower-cased, unstemmed, non-stopword words of the question."""
+    return [w for w in _RAW_WORD.findall(_THOUSANDS.sub("", question.lower())) if w not in STOPWORDS]
+
+
+def query_words(question: str) -> list[str]:
+    """UNSTEMMED keyword-search words: the question's specific words plus thesaurus synonyms.
+
+    Bug fix (audit H1): stores used to receive our own stems ("deductibl"), and PostgreSQL then stemmed them
+    again with its English stemmer ("deductibl" vs the indexed "deduct"), so core terms never matched. Each
+    store now applies its own stemmer to raw words, consistently with how it indexed the documents."""
+    keys = set(key_terms(question))
+    out: list[str] = []
+    for w in raw_words(question):
+        if stem(w) in keys:
+            for x in [w, *THESAURUS.get(w, [])]:
+                if x not in out:
+                    out.append(x)
+    return out or raw_words(question)
+
+
 def query_terms(question: str) -> list[str]:
     """Lexical search terms: specific terms plus synonyms; all tokens only if nothing specific remains.
     Generic words ("cover", "claim") match almost every chunk and drown out the decisive term ("Mexico")."""
@@ -103,13 +129,36 @@ def generic_groups(question: str) -> list[tuple[str, set[str]]]:
     return [(t, {t, *_THES.get(t, ())}) for t in generic_terms(question)]
 
 
-def content_groups(question: str) -> list[tuple[str, set[str]]]:
+def soften(question: str, groups: list[tuple[str, set[str]]],
+           evidence_texts: list[str] | None) -> list[tuple[str, set[str]]]:
+    """Add evidence words that are near-synonyms of each question term (pretrained word vectors).
+    No-op when the semantic layer is unavailable."""
+    wv = word_vectors()
+    if wv is None or not evidence_texts or not groups:
+        return groups
+    vocab = words_in(evidence_texts)
+    vocab_stems = {stem(w) for w in vocab}
+    surface = dict(zip([g[0] for g in groups], surface_forms(question, [g[0] for g in groups]), strict=True))
+    # Only for words the evidence does NOT contain. Word vectors put co-hyponyms close together ("mexico" ~
+    # "canada"): letting a present word also match its neighbours made the agent quote the Canada clause for
+    # a Mexico question (caught by test_multi_part_question_answers_each_part during the audit).
+    # Numbers are never soft-matched: their vectors are close to unrelated units ("16" ~ "days", "month").
+    return [(name, members if (members & vocab_stems or name.isdigit())
+             else members | wv.neighbors(surface[name], vocab))
+            for name, members in groups]
+
+
+def content_groups(question: str, evidence_texts: list[str] | None = None) -> list[tuple[str, set[str]]]:
     """Term groups for *sentence selection*: key terms minus policy-type words; if nothing remains
     ("How quickly are pet claims paid?") fall back to the question's generic insurance terms."""
-    groups = [g for g in term_groups(question) if g[0] not in POLICY_TYPE_TERMS]
-    if groups:
-        return groups
-    return generic_groups(question)
+    groups = [g for g in term_groups(question) if g[0] not in POLICY_TYPE_TERMS] or generic_groups(question)
+    return soften(question, groups, evidence_texts)
+
+
+def topic_stems(question: str) -> set[str] | None:
+    """Stems of the question's nouns/proper nouns/adjectives, or None without the semantic layer."""
+    wv = word_vectors()
+    return None if wv is None else {stem(w) for w in wv.topic_words(question)}
 
 
 def idf_weights(groups: list[tuple[str, set[str]]], token_sets: list[set[str]]) -> dict[str, float]:
@@ -121,12 +170,20 @@ def idf_weights(groups: list[tuple[str, set[str]]], token_sets: list[set[str]]) 
 
 
 def term_coverage(question: str, texts: list[str]) -> tuple[float, list[str]]:
-    """IDF-weighted share of the question's specific terms present in `texts`, plus the missing terms."""
-    groups = term_groups(question)
+    """IDF-weighted share of the question's terms present in `texts`, plus the missing topic terms.
+
+    Present words always count as evidence. Absent words count AGAINST the question only if they are topics
+    (nouns/adjectives): a missing "roof" or "cryptocurrency" matters, a missing "start" or "newly" does not.
+    (First audit fix used topics only, which dropped present verbs like "damages" and over-abstained.)"""
+    groups = [g for g in term_groups(question) if not g[0].isdigit()]
     if not groups:
         return 1.0, []
     token_sets = [set(tokens(t)) for t in texts]
     vocab = set().union(*token_sets) if token_sets else set()
+    topics = topic_stems(question)
+    if topics is not None:
+        kept = [g for g in groups if g[1] & vocab or g[0] in topics]
+        groups = kept or groups
     w = idf_weights(groups, token_sets)
     missing = [name for name, members in groups if not members & vocab]
     total = sum(w.values())

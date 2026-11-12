@@ -156,3 +156,17 @@ def test_failed_ingestion_leaves_store_untouched(settings):
     with pytest.raises(PdfValidationError):
         ingest_bytes(b"%PDF-1.4 garbage", "bad.pdf", settings=settings, store=store, embedder=HashingEmbedder(64))
     assert store.list_documents() == []
+
+
+def test_reset_db_on_memory_store_fails_cleanly(monkeypatch, capsys):
+    # Audit L1: used to crash with AttributeError.
+    from policyqa import cli
+    from policyqa.config import get_settings
+
+    monkeypatch.setenv("VECTOR_STORE", "memory")
+    get_settings.cache_clear()
+    try:
+        assert cli.main(["reset-db", "--yes"]) == 2
+        assert "only applies to VECTOR_STORE=postgres" in capsys.readouterr().err
+    finally:
+        get_settings.cache_clear()

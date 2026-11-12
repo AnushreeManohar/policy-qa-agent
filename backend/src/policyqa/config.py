@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     # --- Embeddings ------------------------------------------------------------------------------
     # "hashing" is a deterministic, dependency-free baseline so the project runs fully offline.
-    embedding_provider: Literal["hashing", "openai"] = "hashing"
+    embedding_provider: Literal["hashing", "wordvec", "openai"] = "hashing"
     embedding_model: str = "text-embedding-3-small"
     embedding_dim: int = 1024
 
@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     llm_base_url: str | None = None  # OpenAI-compatible endpoints (e.g. Ollama, vLLM)
     llm_temperature: float = 0.0
     llm_timeout_s: float = 60.0
+    # On LLM failure, answer in extractive mode (flagged as degraded) instead of returning 502.
+    llm_fallback_extractive: bool = True
     anthropic_api_key: SecretStr | None = None
     openai_api_key: SecretStr | None = None
 
@@ -56,11 +58,20 @@ class Settings(BaseSettings):
     api_key: SecretStr | None = None  # if set, mutating endpoints (and optionally /ask) require X-API-Key
     require_api_key_for_ask: bool = False
     allow_uploads: bool = True
+    # Audit C2: without API_KEY, uploads used to be open to anyone, letting an anonymous user add a fake
+    # "policy" that the agent then quotes as fact. Anonymous uploads now require an explicit opt-in.
+    allow_anonymous_uploads: bool = False
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173", "http://localhost:8080"])
     rate_limit_per_minute: int = 30
     max_question_chars: int = 1000
     log_level: str = "INFO"
     log_questions: bool = False  # off by default: questions may contain personal data
+
+    @field_validator("api_key", "anthropic_api_key", "openai_api_key", "llm_base_url", mode="before")
+    @classmethod
+    def _empty_is_unset(cls, v: object) -> object:
+        # Audit finding: `API_KEY=` (empty, as in .env.example) used to become a key nobody could supply.
+        return None if isinstance(v, str) and not v.strip() else v
 
     @field_validator("cors_origins", mode="before")
     @classmethod

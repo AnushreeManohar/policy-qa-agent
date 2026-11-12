@@ -51,6 +51,8 @@ class AgentState(TypedDict, total=False):
     question: str
     policy_type: str | None
     routed_type: str | None  # policy type the question was routed to (user-given or detected)
+    user_scoped: bool  # True when the CALLER chose the policy type: never broaden beyond it (audit M1)
+    degraded: bool  # True when the LLM failed and the answer fell back to extractive mode
     queries: list[str]
     subquestions: list[str]
     attempts: int
@@ -79,6 +81,7 @@ class AgentResult:
     missing_terms: list[str]
     faithfulness: float | None
     mode: str
+    degraded: bool
     latency_ms: float
     retrieval_ms: float | None
     trace: list[dict[str, Any]] = field(default_factory=list)
@@ -128,7 +131,7 @@ class PolicyQAAgent:
     def _route_after_grade(self, s: AgentState) -> str:
         if s["coverage"] >= self.settings.min_term_coverage and s["retrieved"]:
             return "generate"
-        if s.get("policy_type") and s["attempts"] < self.settings.max_retrieval_attempts:
+        if s.get("policy_type") and not s.get("user_scoped") and s["attempts"] < self.settings.max_retrieval_attempts:
             return "retrieve"  # broaden: retry without the policy-type filter
         return "abstain"
 
@@ -151,6 +154,7 @@ class PolicyQAAgent:
     def plan_query(self, s: AgentState) -> dict:
         q = s["question"]
         ptype = s.get("policy_type")
+        user_scoped = ptype is not None
         if not ptype:
             toks = set(tokens(q)) | set(re.findall(r"[a-z]+", q.lower()))
             found = [t for t, hints in _TYPE_HINTS.items() if toks & hints]
@@ -173,6 +177,7 @@ class PolicyQAAgent:
             extra = [t for t in grounding.expand_terms(grounding.key_terms(sub)) if t not in tokens(sub)]
             expanded.append(f"{sub} {' '.join(extra)}".strip())
         return {"queries": expanded, "subquestions": queries, "policy_type": ptype, "routed_type": ptype,
+                "user_scoped": user_scoped,
                 "_info": {"queries": expanded, "policy_type": ptype}}
 
     @_timed("retrieve")
@@ -188,12 +193,20 @@ class PolicyQAAgent:
         merged: list[RetrievedChunk] = list(s.get("retrieved") or [])[: k // 2] if attempts else []
         seen: set[str] = {c.chunk.chunk_id for c in merged}
         kept = len(merged)
+        flagged: list[RetrievedChunk] = []
         # Round-robin across sub-queries so every part of a multi-part question gets evidence.
         for rank in range(max((len(r.chunks) for r in per_query), default=0)):
             for r in per_query:
-                if rank < len(r.chunks) and r.chunks[rank].chunk.chunk_id not in seen and len(merged) < k:
-                    seen.add(r.chunks[rank].chunk.chunk_id)
-                    merged.append(r.chunks[rank])
+                c = r.chunks[rank] if rank < len(r.chunks) else None
+                if c is None or c.chunk.chunk_id in seen:
+                    continue
+                if c.chunk.flags:  # shown to the user as ignored; never counts toward the evidence budget
+                    seen.add(c.chunk.chunk_id)
+                    flagged.append(c)
+                elif sum(1 for m in merged if not m.chunk.flags) < k:
+                    seen.add(c.chunk.chunk_id)
+                    merged.append(c)
+        merged += flagged[:2]
         ms = sum(r.latency_ms for r in per_query)
         return {
             "retrieved": merged, "attempts": attempts + 1, "retrieval_ms": ms,
@@ -220,7 +233,13 @@ class PolicyQAAgent:
             msg = self.llm.invoke([("system", SYSTEM_PROMPT),
                                    ("human", answer_prompt(s["question"], s["retrieved"], s.get("feedback")))])
         except Exception as exc:
-            raise LLMError("language model call failed") from exc
+            if not self.settings.llm_fallback_extractive:
+                raise LLMError("language model call failed") from exc
+            # Degrade instead of failing (audit M3): quote the evidence directly and say so.
+            logger.warning("llm failed, falling back to extractive answer: %s", type(exc).__name__)
+            answer = self._extractive_answer(s)
+            return {"answer": answer, "sufficient": bool(answer), "degraded": True,
+                    "_info": {"mode": "extractive_fallback", "error": type(exc).__name__}}
         text = message_text(msg)
         obj = parse_json_object(text)
         answer = str(obj.get("answer", "")) if obj else text
@@ -312,13 +331,14 @@ class PolicyQAAgent:
         if not pool:
             return ""
         token_sets = [p[3] for p in pool]
+        pool_texts = [p[2] for p in pool]
         by_chunk: dict[int, list[tuple[int, str, set[str]]]] = {}
         for idx, pos, sent, toks in pool:
             by_chunk.setdefault(idx, []).append((pos, sent, toks))
         picked: dict[tuple[int, int], str] = {}
         part: dict[tuple[int, int], int] = {}  # which sub-question a sentence answers
         for part_no, sub in enumerate(s.get("subquestions") or [s["question"]]):
-            groups = grounding.content_groups(sub) or [(t, {t}) for t in tokens(sub)]
+            groups = grounding.content_groups(sub, pool_texts) or [(t, {t}) for t in tokens(sub)]
             weights = grounding.idf_weights(groups, token_sets)
             # Normalise only over terms that occur somewhere in the evidence: a term found nowhere ("fully")
             # cannot be matched by any sentence; whether that matters was already decided by grade_evidence.
@@ -370,7 +390,8 @@ class PolicyQAAgent:
     # ------------------------------------------------------------------ public API
     def ask(self, question: str, policy_type: str | None = None) -> AgentResult:
         t0 = time.perf_counter()
-        final: AgentState = self.graph.invoke({"question": question, "policy_type": policy_type, "trace": []})
+        final: AgentState = self.graph.invoke({"question": question, "policy_type": policy_type, "trace": [],
+                                               "degraded": False})
         status = final.get("status", "insufficient_information")
         if status == "insufficient":
             status = "insufficient_information"
@@ -389,7 +410,8 @@ class PolicyQAAgent:
             question=question, answer=answer, status=status, citations=citations, sources=sources,
             policy_type=final.get("policy_type"), coverage=final.get("coverage"),
             missing_terms=final.get("missing_terms", []) or [], faithfulness=final.get("faithfulness"),
-            mode=self.mode, latency_ms=round((time.perf_counter() - t0) * 1000, 2),
+            mode=self.mode, degraded=bool(final.get("degraded")),
+            latency_ms=round((time.perf_counter() - t0) * 1000, 2),
             retrieval_ms=round(final["retrieval_ms"], 2) if final.get("retrieval_ms") is not None else None,
             trace=final.get("trace", []),
         )

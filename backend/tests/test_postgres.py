@@ -45,9 +45,9 @@ def test_ingest_search_duplicate_and_cascade_delete(pg):
 
     vec = store.vector_search(emb.embed(["windstorm hail deductible"])[0], 3)
     assert vec and -1.0 <= vec[0].score <= 1.0 and vec[0].chunk.page_start >= 1
-    kw = store.keyword_search(["earthquak", "landslid"], 3)
+    kw = store.keyword_search(["earthquake", "landslide"], 3)
     assert kw and "earthquake" in kw[0].chunk.text.lower()
-    assert store.keyword_search(["earthquak"], 3, policy_type="auto") == []
+    assert store.keyword_search(["earthquake"], 3, policy_type="auto") == []
 
     assert store.delete_document(r.doc_id)
     assert store.all_chunks() == []  # ON DELETE CASCADE removed chunks
@@ -59,8 +59,31 @@ def test_sql_metacharacters_are_inert(pg):
                  embedder=HashingEmbedder(s.embedding_dim))
     # Terms are sanitised and bound as parameters; none of these can alter the query.
     assert store.keyword_search(["'; drop table chunks; --", "x' or '1'='1"], 5) == []
-    assert store.keyword_search(["deductibl"], 5, policy_type="' OR 1=1 --") == []
+    assert store.keyword_search(["deductible"], 5, policy_type="' OR 1=1 --") == []
     assert len(store.all_chunks()) > 0
+
+
+@pytest.mark.parametrize("word", ["deductible", "deductibles", "eligible", "driving", "premises"])
+def test_keyword_search_matches_terms_postgres_stems_differently(pg, word):
+    # Audit H1: our stems ("deductibl") were stemmed AGAIN by PostgreSQL, so these never matched.
+    s, store = pg
+    for pdf in POLICIES:
+        ingest_bytes(pdf.read_bytes(), pdf.name, settings=s, store=store, embedder=HashingEmbedder(s.embedding_dim))
+    hits = store.keyword_search([word], 3)
+    assert hits and word[:5] in hits[0].chunk.text.lower()
+
+
+def test_memory_and_postgres_keyword_search_agree(pg):
+    from policyqa.store.memory import MemoryStore
+
+    s, store = pg
+    mem = MemoryStore("hashing-1024")
+    emb = HashingEmbedder(s.embedding_dim)
+    for pdf in POLICIES:
+        for st in (store, mem):
+            ingest_bytes(pdf.read_bytes(), pdf.name, settings=s, store=st, embedder=emb)
+    for words in (["deductible", "windstorm"], ["rideshare"], ["waiting", "dysplasia"]):
+        assert store.keyword_search(words, 1)[0].chunk.chunk_id == mem.keyword_search(words, 1)[0].chunk.chunk_id
 
 
 def test_embedding_model_mismatch_is_detected(pg):

@@ -34,7 +34,11 @@ def cmd_reset_db(args: argparse.Namespace) -> int:
         print("Refusing to drop tables without --yes", file=sys.stderr)
         return 2
     _, _, store = _components()
-    store.reset()  # type: ignore[attr-defined]
+    if not hasattr(store, "reset"):
+        print("reset-db only applies to VECTOR_STORE=postgres (the memory store is empty on every start)",
+              file=sys.stderr)
+        return 2
+    store.reset()
     store.init_schema()
     print("database reset")
     return 0

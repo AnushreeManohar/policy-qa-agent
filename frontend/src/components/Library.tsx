@@ -18,6 +18,7 @@ export function Library({ docs, health, filter, onFilter, onUploaded, apiKey, on
   const fileRef = useRef<HTMLInputElement>(null);
   const [upload, setUpload] = useState<{ state: "idle" | "busy" | "done" | "error"; message?: string }>({ state: "idle" });
   const [needsKey, setNeedsKey] = useState(false);
+  const showKey = needsKey || Boolean(health?.upload_requires_key);
   const types = [...new Set(docs.map((d) => d.policy_type))].sort();
 
   const onFile = async (file: File | undefined) => {
@@ -83,7 +84,7 @@ export function Library({ docs, health, filter, onFilter, onUploaded, apiKey, on
         <div className="upload">
           <input ref={fileRef} id="pdf" type="file" accept="application/pdf,.pdf" hidden
                  onChange={(e) => onFile(e.target.files?.[0])} />
-          {needsKey && (
+          {showKey && (
             <label className="upload__key">
               API key required to add policies
               <input type="password" value={apiKey} autoComplete="off" onChange={(e) => onApiKey(e.target.value)} />
